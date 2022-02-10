@@ -14,7 +14,7 @@ Coursework completed on the OpenManipulator X attached to an acrylic plate with 
   - Inverse Kinematics in Appendix 
 
 - Video demo of tasks
-- Demo DDay 
+- Demo Day 
 
 ---- 
 
