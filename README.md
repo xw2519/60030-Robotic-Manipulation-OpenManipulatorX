@@ -49,3 +49,13 @@ Create a application for robotic manipulation using a **4 DOF + 1 DOF gripper**.
 Guidelines:
 - No liquids 
 - No electrical objects 
+
+---- 
+
+## Useful links 
+
+### OpenMANIPULATOR-X
+- Specifications: https://emanual.robotis.com/docs/en/platform/openmanipulator_x/specification/#specification
+
+### MATLAB 
+- MATLAB support for OpenMANIPULATOR-X: https://community.robotis.us/t/matlab-robot-manipulator-walkthrough-algorithms-with-openmanipulator-x/401
