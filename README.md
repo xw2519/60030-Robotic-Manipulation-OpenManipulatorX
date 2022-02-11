@@ -59,3 +59,8 @@ Guidelines:
 
 ### MATLAB 
 - MATLAB support for OpenMANIPULATOR-X: https://community.robotis.us/t/matlab-robot-manipulator-walkthrough-algorithms-with-openmanipulator-x/401
+- MATLAB OPENMANIPULATOR-X Simulation Files: https://uk.mathworks.com/matlabcentral/fileexchange/65316-designing-robot-manipulator-algorithms 
+
+### Theory:
+- Coordinate frames: https://w3.cs.jmu.edu/spragunr/CS354_F16/handouts/frames.pdf
+- 
