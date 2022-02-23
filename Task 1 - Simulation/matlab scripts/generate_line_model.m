@@ -5,11 +5,18 @@
 
 %% --- Specify the DH matrix --- %%
 
-dhparams = [0   	0	    0.018  	  0;
-            0       0       0.077     0 
-            0.024   0	    0.128	  0;
-            0.124  	0	    0    	  0;
-            0.126   0   	0   	  0];
+% Frame     d       theta            r       alpha 
+% -------------------------------------------------
+%   1       0.077   theta_1          0        90
+%   2       0       theta_2 - 11     0.130    0
+%   3       0       theta_3 + 11     0.124    0
+%   4       0       theta_4          0.126    0
+
+dhparams = [  0           0    0      0
+              0.077    pi/2    0      0;
+              0           0    0.130  0;
+              0           0    0.124  0;
+              0           0    0.126  0  ];
 
 %% --- Initialise robotic components --- %%
 
@@ -17,9 +24,7 @@ robot = rigidBodyTree;
 
 % Base servo
 body1 = rigidBody('body1');
-jnt1 = rigidBodyJoint('jnt1','revolute');
-
-% 
+jnt1 = rigidBodyJoint('jnt1','revolute'); 
 body2 = rigidBody('body2');
 jnt2 = rigidBodyJoint('jnt2','revolute');
 body3 = rigidBody('body3');

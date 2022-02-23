@@ -170,6 +170,15 @@ classdef openManipX
             logger(mfilename, msg) % Log
         end
         
+        function write_to_all(obj, ENCODER_VAL)
+            msg = append('Writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
+            logger(mfilename, msg) % Log
+
+            ...
+                
+            logger(mfilename, msg) % Log
+        end
+        
         function raw_encoder_value = read(obj, SERVO_ID)
             ...
         end
