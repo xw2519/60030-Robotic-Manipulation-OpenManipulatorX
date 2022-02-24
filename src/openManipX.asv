@@ -36,13 +36,10 @@ classdef openManipX
 
         COMM_SUCCESS                = 0;            % Communication Success result value
         COMM_TX_FAIL                = -1001;        % Communication Tx Failed
-
-        LEN_PRO_GOAL_POSITION       = 4;
     end
     
     properties(GetAccess=private)
         PORT_NUM
-        LIB_NAME
     end
     
     %% --- Class methods --- %%
@@ -51,23 +48,23 @@ classdef openManipX
         function obj = openManipX()
             
             % Load object library
-            obj.LIB_NAME = '';
+            lib_name = '';
 
             if strcmp(computer, 'PCWIN')
-              obj.LIB_NAME = 'dxl_x86_c';
+              lib_name = 'dxl_x86_c';
             elseif strcmp(computer, 'PCWIN64')
-              obj.LIB_NAME = 'dxl_x64_c';
+              lib_name = 'dxl_x64_c';
             elseif strcmp(computer, 'GLNX86')
-              obj.LIB_NAME = 'libdxl_x86_c';
+              lib_name = 'libdxl_x86_c';
             elseif strcmp(computer, 'GLNXA64')
-              obj.LIB_NAME = 'libdxl_x64_c';
+              lib_name = 'libdxl_x64_c';
             elseif strcmp(computer, 'MACI64')
-              obj.LIB_NAME = 'libdxl_mac_c';
+              lib_name = 'libdxl_mac_c';
             end
 
             % Load Libraries
-            if ~libisloaded(obj.LIB_NAME)
-                [notfound, warnings] = loadlibrary(obj.LIB_NAME, 'dynamixel_sdk.h', 'addheader', 'port_handler.h', 'addheader', 'packet_handler.h');
+            if ~libisloaded(lib_name)
+                [notfound, warnings] = loadlibrary(lib_name, 'dynamixel_sdk.h', 'addheader', 'port_handler.h', 'addheader', 'packet_handler.h');
             end
 
             % Set the port path
@@ -81,7 +78,7 @@ classdef openManipX
             if (openPort(obj.PORT_NUM))
                 fprintf('Port Open\n');
             else
-                unloadlibrary(obj.LIB_NAME);
+                unloadlibrary(lib_name);
                 fprintf('Failed to open the port\n');
                 input('Press any key to terminate...\n');
                 return;
@@ -91,7 +88,7 @@ classdef openManipX
             if (setBaudRate(obj.PORT_NUM, obj.BAUDRATE))
                 fprintf('Baudrate Set\n');
             else
-                unloadlibrary(obj.LIB_NAME);
+                unloadlibrary(lib_name);
                 fprintf('Failed to change the baudrate!\n');
                 input('Press any key to terminate...\n');
                 return;
@@ -99,23 +96,7 @@ classdef openManipX
         end
         
         function delete(obj)
-            logger(mfilename, "Disabling robotic arm") % Log
             
-            % Move to resting position
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 11, obj.ADDR_PRO_GOAL_POSITION, 2045);
-            pause(0.5)
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 14, obj.ADDR_PRO_GOAL_POSITION, 2482);
-            pause(0.5)
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 13, obj.ADDR_PRO_GOAL_POSITION, 3015);
-            pause(0.5)
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 12, obj.ADDR_PRO_GOAL_POSITION, 715);
-            pause(3)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
             
             % Disable Dynamixel Torque
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 11, obj.ADDR_PRO_TORQUE_ENABLE, obj.TORQUE_DISABLE);
@@ -135,16 +116,14 @@ classdef openManipX
             pause(2)
 
             % Close port
-            closePort(obj.PORT_NUM);
+            closePort(port_num);
             fprintf('Port Closed \n');
 
             % Unload Library
-            unloadlibrary(obj.LIB_NAME);
+            unloadlibrary(lib_name);
 
             close all;
-            clear;
-            
-            logger(mfilename, "Robotic arm disabled") % Log
+            clear all;
         end
         
         %% --- Servo settings --- %%
@@ -194,14 +173,8 @@ classdef openManipX
             logger(mfilename, "Toggling torque mode successful") % Log
         end
    
-        function set_servo_speed_limits(obj, DXL_VELOCITY)
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY); 
-            
-            logger(mfilename, "Log: Servo speeds limited") % Log
+        function set_servo_limits(obj, SERVO_ID, MIN_POS, MAX_POS)
+            ...
         end
     
         %% --- Write and read functions --- %%
@@ -230,32 +203,8 @@ classdef openManipX
             logger(mfilename, msg) % Log
         end
         
-        function read_servo_values = read(obj, SERVO_ID)
+        function raw_encoder_value = read(obj, SERVO_ID)
             ...
-        end
-    
-        %% --- Gripper functions --- %%
-        function open_gripper(obj)
-            logger(mfilename, "Opening gripper") % Log
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, 4280.0);
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-        end
-        
-        function close_gripper(obj)
-            logger(mfilename, "Closing gripper") % Log
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, 3481.0);
-            pause(0.5)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
         end
     end
 end
