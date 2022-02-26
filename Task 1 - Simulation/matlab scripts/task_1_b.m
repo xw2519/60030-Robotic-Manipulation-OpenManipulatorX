@@ -16,15 +16,22 @@
 %% --------------------------------------------------------------------- %%
 
 clear;
+clf;
 
 THETA_1_ARRAY = [-90 -75 -60 -45 -30 -15 0 15 30 45 60 75 90];
 
 %% --- Plot settings
 arm_plot = plot3([0 0], [0 0], [0 0]);
-title(['Forward Kinematics Simulation']);
+title(['Forward Kinematics Demostration']);
+
+xlabel('X');
+ylabel('Y'); 
+zlabel('Z');
 
 hold on;
-    
+
+pause(2);
+
 for c = 1:13
     %% --- Constants 
     THETA_1 = THETA_1_ARRAY(c);

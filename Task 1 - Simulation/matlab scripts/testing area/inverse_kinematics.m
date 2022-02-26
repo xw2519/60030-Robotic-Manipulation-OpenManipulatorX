@@ -11,9 +11,9 @@
 % a_4 = 0.126
 
 %% --- Desired coordinates --- %%
-P_X = 0.2400; 
-P_Y = 0.0;
-P_Z = 0.0250;
+P_X = 0.2; 
+P_Y = 0.1;
+P_Z = 0.150;
 
 %% --- Constants
 A_2 = 0.130;
@@ -29,7 +29,7 @@ P_R = abs(sqrt(P_X^2 + P_Y^2));
 R_3 = P_R;
 Z_3 = P_Z - 0.077;
 
-PHI = -90;
+PHI = 0;
 
 R_2 = R_3 - A_4*cosd(PHI);
 Z_2 = Z_3 - A_4*sind(PHI);
