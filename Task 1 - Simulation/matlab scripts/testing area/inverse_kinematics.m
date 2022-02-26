@@ -1,18 +1,19 @@
-% Frame     d       theta            r       alpha 
-% ----------------------------------------------------
-%   1       0.077   theta_1          0        90
-%   2       0       theta_1 - 11     0.130    0
-%   3       0       theta_3 + 11     0.124    0
-%   4       0       theta_4          0.126    0
+% Frame     alpha_{i-1}     a_{i-1}     d_i           theta_i 
+% -----------------------------------------------------------------
+%   1            0             0       0.077          theta_1
+%   2            90            0         0      theta_2 + 90 - 10.6    
+%   3            0           0.130       0      theta_3 - 90 + 10.6
+%   4            0           0.124       0            theta_4
+%   5            0           0.126       0               0
 
 % a_2 = 0.130
 % a_3 = 0.124
 % a_4 = 0.126
 
 %% --- Desired coordinates --- %%
-P_X = 0.274; 
-P_Y = 0;
-P_Z = 0.205;
+P_X = 0.2400; 
+P_Y = 0.0;
+P_Z = 0.0250;
 
 %% --- Constants
 A_2 = 0.130;
@@ -22,21 +23,17 @@ A_4 = 0.126;
 constant = atand(0.024/0.128);
 constant = 90-constant;
 
-
 SIGN = -1;
 
 P_R = abs(sqrt(P_X^2 + P_Y^2));
 R_3 = P_R;
 Z_3 = P_Z - 0.077;
 
-PHI = 60;
-
-disp(PHI);
+PHI = -90;
 
 R_2 = R_3 - A_4*cosd(PHI);
-disp(R_2)
 Z_2 = Z_3 - A_4*sind(PHI);
-disp(Z_2)
+
 %% --- Theta 1 --- %%
 % Find correct value 
 if ~(P_X<=0) && ~(P_Y<=0)  
@@ -80,6 +77,7 @@ disp(THETA_3)
 disp('Raw Theta 4')
 disp(THETA_4)
 
+% Converting raw thetas into format required by FK
 THETA_2 =  THETA_2 - (90 - constant);
 THETA_2 = -1*THETA_2;
 
@@ -141,6 +139,23 @@ T_4_5 = [   cosd(0)                    -sind(0)               0           0.126;
         ];
 
 %% --- Testing --- %%
+T_0_1 = T_0_1;
+T_0_2 = T_0_1*T_1_2;
+T_0_3 = T_0_1*T_1_2*T_2_3;
+T_0_4 = T_0_1*T_1_2*T_2_3*T_3_4;
 T_0_5 = T_0_1*T_1_2*T_2_3*T_3_4*T_4_5;
 
+disp('T_0_1')
+disp(T_0_1);
+
+disp('T_0_2')
+disp(T_0_2);
+
+disp('T_0_3')
+disp(T_0_3);
+
+disp('T_0_4')
+disp(T_0_4);
+
+disp('T_0_5')
 disp(T_0_5);
