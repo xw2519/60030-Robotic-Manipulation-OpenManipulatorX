@@ -19,8 +19,8 @@ clf;
 clear;
 
 %% --- Constants 
-THETA_1 = -18.4349;
-THETA_2 = -22.7207;
+THETA_1 = 0;
+THETA_2 = -45;
 THETA_3 = 6.0341;
 THETA_4 = 16.6865;
 
@@ -85,9 +85,9 @@ plot3(F_1_X(1, :), F_1_X(2, :), F_1_X(3, :), '-r', 'LineWidth',2);
 plot3(F_1_Y(1, :), F_1_Y(2, :), F_1_Y(3, :), '-g', 'LineWidth',2);
 plot3(F_1_Z(1, :), F_1_Z(2, :), F_1_Z(3, :), '-b', 'LineWidth',2);
 
-plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-r', 'LineWidth',2);
-plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-g', 'LineWidth',2);
-plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-b', 'LineWidth',2);
+plot3(F_2_X(1, :), F_2_X(2, :), F_2_X(3, :), '-r', 'LineWidth',2);
+plot3(F_2_Y(1, :), F_2_Y(2, :), F_2_Y(3, :), '-g', 'LineWidth',2);
+plot3(F_2_Z(1, :), F_2_Z(2, :), F_2_Z(3, :), '-b', 'LineWidth',2);
 
 plot3(F_3_X(1, :), F_3_X(2, :), F_3_X(3, :), '-r', 'LineWidth',2);
 plot3(F_3_Y(1, :), F_3_Y(2, :), F_3_Y(3, :), '-g', 'LineWidth',2);

@@ -15,7 +15,7 @@ M(96) = struct('cdata',[],'colormap',[]);
 fig = gcf;
 
 ARM_PLOT = plot3([0 0], [0 0], [0 0]);
-title(['Inverse Kinematics Demostration']);
+title('Inverse Kinematics Demostration');
 
 xlabel('X');
 ylabel('Y'); 
@@ -33,31 +33,31 @@ THETA_3 = 0;
 THETA_4 = 0;
 
 %% --- Plot [10 x 10 cm] square trajectory lines on 3 planes
-X_COORDS_INIT = linspace(0.2739, 0.2, 15);
-Y_COORDS_INIT = linspace(0, -0.1, 15);
-Z_COORDS_INIT = linspace(0.2048, 0.15, 15);
+X_COORDS_INIT = linspace(0.2739, 0.1, 25);
+Y_COORDS_INIT = linspace(0, -0.1, 25);
+Z_COORDS_INIT = linspace(0.2048, 0.15, 25);
 
-line(X_COORDS_INIT,                   Y_COORDS_INIT,    Z_COORDS_INIT,   'color', '#808080', 'marker', 'o');
+% line(X_COORDS_INIT, Y_COORDS_INIT, Z_COORDS_INIT, 'color', '#808080', 'marker', 'o');
 
-X_COORDS = linspace(0.2, 0.3, 20);
+X_COORDS = linspace(0.1, 0.2, 20);
 Y_COORDS = linspace(0.1, -0.1, 20);
 Z_COORDS = linspace(0.15, 0.25, 20);
 
-line(X_COORDS,                   Y_COORDS(1)*ones(1, 20),    Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
-line(X_COORDS,                   Y_COORDS(1)*ones(1, 20),    Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
-line(X_COORDS(1)*ones(1, 20),    Y_COORDS(1)*ones(1, 20),    Z_COORDS,                  'color', '#808080', 'marker', 'o');
-line(X_COORDS(20)*ones(1, 20),   Y_COORDS(1)*ones(1, 20),    Z_COORDS,                  'color', '#808080', 'marker', 'o');
+% line(X_COORDS,                   Y_COORDS(1)*ones(1, 20),    Z_COORDS(1)*ones(1, 20),   'color', 'b', 'marker', 'o');
+% line(X_COORDS,                   Y_COORDS(1)*ones(1, 20),    Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
+% line(X_COORDS(1)*ones(1, 20),    Y_COORDS(1)*ones(1, 20),    Z_COORDS,                  'color', '#808080', 'marker', 'o');
+% line(X_COORDS(20)*ones(1, 20),   Y_COORDS(1)*ones(1, 20),    Z_COORDS,                  'color', '#808080', 'marker', 'o');
 
-line(X_COORDS,                   Y_COORDS(20)*ones(1, 20),   Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
-line(X_COORDS,                   Y_COORDS(20)*ones(1, 20),   Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
-line(X_COORDS(1)*ones(1, 20),    Y_COORDS(20)*ones(1, 20),   Z_COORDS,                  'color', '#808080', 'marker', 'o');
-line(X_COORDS(20)*ones(1, 20),   Y_COORDS(20)*ones(1, 20),   Z_COORDS,                  'color', '#808080', 'marker', 'o');
+% line(X_COORDS,                   Y_COORDS(20)*ones(1, 20),   Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
+% line(X_COORDS,                   Y_COORDS(20)*ones(1, 20),   Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
+% line(X_COORDS(1)*ones(1, 20),    Y_COORDS(20)*ones(1, 20),   Z_COORDS,                  'color', '#808080', 'marker', 'o');
+% line(X_COORDS(20)*ones(1, 20),   Y_COORDS(20)*ones(1, 20),   Z_COORDS,                  'color', '#808080', 'marker', 'o');
 
-line(X_COORDS(1)*ones(1, 20),    Y_COORDS,                   Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
-line(X_COORDS(1)*ones(1, 20),    Y_COORDS,                   Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
+% line(X_COORDS(1)*ones(1, 20),    Y_COORDS,                   Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
+% line(X_COORDS(1)*ones(1, 20),    Y_COORDS,                   Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
 
-line(X_COORDS(20)*ones(1, 20),   Y_COORDS,                   Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
-line(X_COORDS(20)*ones(1, 20),   Y_COORDS,                   Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
+% line(X_COORDS(20)*ones(1, 20),   Y_COORDS,                   Z_COORDS(1)*ones(1, 20),   'color', '#808080', 'marker', 'o');
+% line(X_COORDS(20)*ones(1, 20),   Y_COORDS,                   Z_COORDS(20)*ones(1, 20),  'color', '#808080', 'marker', 'o');
 
 hold on
 
@@ -72,6 +72,18 @@ XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS).' (Z_COO
 XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(1)*ones(1, 20)).' (Y_COORDS(1)*ones(1, 20)).'  (Z_COORDS).'                 ];
 XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(1)*ones(1, 20)).' (Y_COORDS).'                 (Z_COORDS(20)*ones(1, 20)).' ];
 XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS).'])         ];
+XYZ_COORDS = [XYZ_COORDS ; (X_COORDS).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS(1)*ones(1, 20)).'                 ];
+XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(20)*ones(1, 20)).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS).'                ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS(20)*ones(1, 20)).'])        ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(20)*ones(1, 20)).'])         ];
+XYZ_COORDS = [XYZ_COORDS ; (X_COORDS).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS(20)*ones(1, 20)).'                 ];
+XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(20)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(20)*ones(1, 20)).'                ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(20)*ones(1, 20)).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS).'])        ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(20)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(1)*ones(1, 20)).'])         ];
+XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(20)*ones(1, 20)).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS).'                 ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS(20)*ones(1, 20)).'])         ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS(1)*ones(1, 20)).'  (Z_COORDS).'])         ];
+XYZ_COORDS = [XYZ_COORDS ; (X_COORDS).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS(1)*ones(1, 20)).'                  ];
 
 % Feed coordinate matrix into IK to find all angles and package into matrix
 THETA_MATRIX = [0 0 0 0];
@@ -176,9 +188,9 @@ for i = 1:length(THETA_MATRIX)
     Y_2 = plot3(F_1_Y(1, :), F_1_Y(2, :), F_1_Y(3, :), '-g', 'LineWidth',2);
     Z_2 = plot3(F_1_Z(1, :), F_1_Z(2, :), F_1_Z(3, :), '-b', 'LineWidth',2);
 
-    X_3 = plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-r', 'LineWidth',2);
-    Y_3 = plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-g', 'LineWidth',2);
-    Z_3 = plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-b', 'LineWidth',2);
+    X_3 = plot3(F_2_X(1, :), F_2_X(2, :), F_2_X(3, :), '-r', 'LineWidth',2);
+    Y_3 = plot3(F_2_Y(1, :), F_2_Y(2, :), F_2_Y(3, :), '-g', 'LineWidth',2);
+    Z_3 = plot3(F_2_Z(1, :), F_2_Z(2, :), F_2_Z(3, :), '-b', 'LineWidth',2);
 
     X_4 = plot3(F_3_X(1, :), F_3_X(2, :), F_3_X(3, :), '-r', 'LineWidth',2);
     Y_4 = plot3(F_3_Y(1, :), F_3_Y(2, :), F_3_Y(3, :), '-g', 'LineWidth',2);
@@ -192,13 +204,16 @@ for i = 1:length(THETA_MATRIX)
     Y_6 = plot3(F_5_Y(1, :), F_5_Y(2, :), F_5_Y(3, :), '-g', 'LineWidth',2);
     Z_6 = plot3(F_5_Z(1, :), F_5_Z(2, :), F_5_Z(3, :), '-b', 'LineWidth',2);
     
-    % Record movies
-    M(i) = getframe(gcf);
+    % Update coordinate
+    scatter3(ARM_COORDINATES_X(5), ARM_COORDINATES_Y(5), ARM_COORDINATES_Z(5), 'MarkerEdgeColor', 'm', 'Marker', 'o');
     
-    pause(0.25);
+    % Record movies
+    % M(i) = getframe(gcf);
+    
+    pause(0.10);
 end
 
-v = VideoWriter('newfile.avi');
-open(v);
-writeVideo(v,M);
-close(v);
+% v = VideoWriter('newfile.avi');
+% open(v);
+% writeVideo(v,M);
+% close(v);

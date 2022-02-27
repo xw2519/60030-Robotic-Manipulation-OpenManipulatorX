@@ -18,7 +18,7 @@
 clear;
 clf;
 
-THETA_1_ARRAY = [-90 -75 -60 -45 -30 -15 0 15 30 45 60 75 90];
+THETA_2_ARRAY = [-90 -75 -60 -45 -30 -15 0 15 30 45 60 75 90];
 
 %% --- Plot settings
 arm_plot = plot3([0 0], [0 0], [0 0]);
@@ -34,8 +34,8 @@ pause(2);
 
 for c = 1:13
     %% --- Constants 
-    THETA_1 = THETA_1_ARRAY(c);
-    THETA_2 = 0;
+    THETA_1 = 0;
+    THETA_2 = THETA_2_ARRAY(c);
     THETA_3 = 0;
     THETA_4 = 0;
 
@@ -100,9 +100,9 @@ for c = 1:13
     plot3(F_1_Y(1, :), F_1_Y(2, :), F_1_Y(3, :), '-g', 'LineWidth',2);
     plot3(F_1_Z(1, :), F_1_Z(2, :), F_1_Z(3, :), '-b', 'LineWidth',2);
 
-    plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-r', 'LineWidth',2);
-    plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-g', 'LineWidth',2);
-    plot3(F_2_X(1, :), F_2_Y(2, :), F_2_Z(3, :), '-b', 'LineWidth',2);
+    plot3(F_2_X(1, :), F_2_X(2, :), F_2_X(3, :), '-r', 'LineWidth',2);
+    plot3(F_2_Y(1, :), F_2_Y(2, :), F_2_Y(3, :), '-g', 'LineWidth',2);
+    plot3(F_2_Z(1, :), F_2_Z(2, :), F_2_Z(3, :), '-b', 'LineWidth',2);
 
     plot3(F_3_X(1, :), F_3_X(2, :), F_3_X(3, :), '-r', 'LineWidth',2);
     plot3(F_3_Y(1, :), F_3_Y(2, :), F_3_Y(3, :), '-g', 'LineWidth',2);

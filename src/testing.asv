@@ -1,8 +1,0 @@
-arm = openManipX();
-position_control_mode(arm);
-toggle_torque(arm, 1);
-
-write(arm, 13, 2383);
-write(arm
-
-delete(arm);
