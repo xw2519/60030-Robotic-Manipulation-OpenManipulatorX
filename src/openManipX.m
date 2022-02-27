@@ -96,6 +96,8 @@ classdef openManipX
                 input('Press any key to terminate...\n');
                 return;
             end
+            
+            % Move robotic arm initial starting position
         end
         
         function delete(obj)

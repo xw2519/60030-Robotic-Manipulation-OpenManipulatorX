@@ -11,9 +11,9 @@
 % a_4 = 0.126
 
 %% --- Desired coordinates --- %%
-P_X = 0.38; 
-P_Y = 0;
-P_Z = 0.077;
+P_X = 0.2; 
+P_Y = 0.1;
+P_Z = 0.150;
 
 %% --- Constants
 A_2 = 0.130;
@@ -23,21 +23,17 @@ A_4 = 0.126;
 constant = atand(0.024/0.128);
 constant = 90-constant;
 
-
-SIGN = -1; %elbow up or elbow down
+SIGN = -1;
 
 P_R = abs(sqrt(P_X^2 + P_Y^2));
 R_3 = P_R;
 Z_3 = P_Z - 0.077;
 
-PHI = 0; %phi = (90-t2)+t3+T4
-
-disp(PHI);
+PHI = 0;
 
 R_2 = R_3 - A_4*cosd(PHI);
-disp(R_2)
 Z_2 = Z_3 - A_4*sind(PHI);
-disp(Z_2)
+
 %% --- Theta 1 --- %%
 % Find correct value 
 if ~(P_X<=0) && ~(P_Y<=0)  
@@ -81,6 +77,7 @@ disp(THETA_3)
 disp('Raw Theta 4')
 disp(THETA_4)
 
+% Converting raw thetas into format required by FK
 THETA_2 =  THETA_2 - (90 - constant);
 THETA_2 = -1*THETA_2;
 
@@ -142,7 +139,23 @@ T_4_5 = [   cosd(0)                    -sind(0)               0           0.126;
         ];
 
 %% --- Testing --- %%
+T_0_1 = T_0_1;
+T_0_2 = T_0_1*T_1_2;
+T_0_3 = T_0_1*T_1_2*T_2_3;
+T_0_4 = T_0_1*T_1_2*T_2_3*T_3_4;
 T_0_5 = T_0_1*T_1_2*T_2_3*T_3_4*T_4_5;
 
-disp("forward kinematic output:")
+disp('T_0_1')
+disp(T_0_1);
+
+disp('T_0_2')
+disp(T_0_2);
+
+disp('T_0_3')
+disp(T_0_3);
+
+disp('T_0_4')
+disp(T_0_4);
+
+disp('T_0_5')
 disp(T_0_5);
