@@ -1,18 +1,19 @@
-% Frame     d       theta            r       alpha 
-% ----------------------------------------------------
-%   1       0.077   theta_1          0        90
-%   2       0       theta_1 - 11     0.130    0
-%   3       0       theta_3 + 11     0.124    0
-%   4       0       theta_4          0.126    0
+% Frame     alpha_{i-1}     a_{i-1}     d_i           theta_i 
+% -----------------------------------------------------------------
+%   1            0             0       0.077          theta_1
+%   2            90            0         0      theta_2 + 90 - 10.6    
+%   3            0           0.130       0      theta_3 - 90 + 10.6
+%   4            0           0.124       0            theta_4
+%   5            0           0.126       0               0
 
 % a_2 = 0.130
 % a_3 = 0.124
 % a_4 = 0.126
 
 %% --- Desired coordinates --- %%
-P_X = 0.274; 
+P_X = 0.38; 
 P_Y = 0;
-P_Z = 0.205;
+P_Z = 0.077;
 
 %% --- Constants
 A_2 = 0.130;
@@ -23,13 +24,13 @@ constant = atand(0.024/0.128);
 constant = 90-constant;
 
 
-SIGN = -1;
+SIGN = -1; %elbow up or elbow down
 
 P_R = abs(sqrt(P_X^2 + P_Y^2));
 R_3 = P_R;
 Z_3 = P_Z - 0.077;
 
-PHI = 60;
+PHI = 0; %phi = (90-t2)+t3+T4
 
 disp(PHI);
 
@@ -143,4 +144,5 @@ T_4_5 = [   cosd(0)                    -sind(0)               0           0.126;
 %% --- Testing --- %%
 T_0_5 = T_0_1*T_1_2*T_2_3*T_3_4*T_4_5;
 
+disp("forward kinematic output:")
 disp(T_0_5);
