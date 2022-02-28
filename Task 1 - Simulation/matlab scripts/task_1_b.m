@@ -18,7 +18,8 @@
 clear;
 clf;
 
-THETA_2_ARRAY = [-90 -75 -60 -45 -30 -15 0 15 30 45 60 75 90];
+THETA_1_ARRAY = [-90 -75 -60 -45 -30 -15 0 15 30 45 60 75 90];
+THETA_2_ARRAY = [-15 0 15 30 45];
 
 %% --- Plot settings
 arm_plot = plot3([0 0], [0 0], [0 0]);
@@ -34,7 +35,7 @@ pause(2);
 
 for c = 1:13
     %% --- Constants 
-    THETA_1 = 0;
+    THETA_1 = THETA_1_ARRAY(c);
     THETA_2 = THETA_2_ARRAY(c);
     THETA_3 = 0;
     THETA_4 = 0;

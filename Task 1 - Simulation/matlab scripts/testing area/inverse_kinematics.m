@@ -29,7 +29,7 @@ P_R = abs(sqrt(P_X^2 + P_Y^2));
 R_3 = P_R;
 Z_3 = P_Z - 0.077;
 
-PHI = 0;
+PHI = -90;
 
 R_2 = R_3 - A_4*cosd(PHI);
 Z_2 = Z_3 - A_4*sind(PHI);

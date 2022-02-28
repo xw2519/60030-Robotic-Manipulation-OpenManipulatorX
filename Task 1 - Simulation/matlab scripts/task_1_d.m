@@ -68,26 +68,27 @@ hold on
 XYZ_COORDS = [(X_COORDS_INIT).' (Y_COORDS_INIT).' (Z_COORDS_INIT).'];
 
 % Starting from cube corner
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(1)*ones(1, 20)).']);         ]; 
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(1)*ones(1, 20)).' (Y_COORDS(1)*ones(1, 20)).'  (Z_COORDS).'                 ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(1)*ones(1, 20)).' (Y_COORDS).'                 (Z_COORDS(20)*ones(1, 20)).' ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS).'])         ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS(1)*ones(1, 20)).'                 ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(20)*ones(1, 20)).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS).'                ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS(20)*ones(1, 20)).'])        ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(20)*ones(1, 20)).'])         ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS(20)*ones(1, 20)).'                 ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(20)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(20)*ones(1, 20)).'                ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(20)*ones(1, 20)).' (Y_COORDS(20)*ones(1, 20)).' (Z_COORDS).'])        ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(20)*ones(1, 20)).' (Y_COORDS).' (Z_COORDS(1)*ones(1, 20)).'])         ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS(20)*ones(1, 20)).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS).'                 ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS(20)*ones(1, 20)).'])         ];
-XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1, 20)).' (Y_COORDS(1)*ones(1, 20)).'  (Z_COORDS).'])         ];
-XYZ_COORDS = [XYZ_COORDS ; (X_COORDS).' (Y_COORDS(1)*ones(1, 20)).' (Z_COORDS(1)*ones(1, 20)).'                  ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1,20)).'  (Y_COORDS).'                (Z_COORDS(1)*ones(1,20)).'  ]);   ]; 
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS(1)*ones(1,20)).'  (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS).'                      ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS(1)*ones(1,20)).'  (Y_COORDS).'                (Z_COORDS(20)*ones(1,20)).'       ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1,20)).'  (Y_COORDS(20)*ones(1,20)).' (Z_COORDS).'])                    ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS).'                (Y_COORDS(20)*ones(1,20)).' (Z_COORDS(1)*ones(1,20)).'        ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS(20)*ones(1,20)).' (Y_COORDS(20)*ones(1,20)).' (Z_COORDS).'                      ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS).'                (Y_COORDS(20)*ones(1,20)).' (Z_COORDS(20)*ones(1,20)).' ])    ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1,20)).'  (Y_COORDS).'                (Z_COORDS(20)*ones(1,20)).' ])    ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS).'                (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS(20)*ones(1,20)).'       ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS(20)*ones(1,20)).' (Y_COORDS).'                (Z_COORDS(20)*ones(1,20)).'       ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(20)*ones(1,20)).' (Y_COORDS(20)*ones(1,20)).' (Z_COORDS).'                ])    ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(20)*ones(1,20)).' (Y_COORDS).'                (Z_COORDS(1)*ones(1,20)).'  ])    ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS(20)*ones(1,20)).' (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS).'                      ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS).'                (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS(20)*ones(1,20)).' ])    ];
+XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1,20)).'  (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS).'                ])    ];
+XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS).'                (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS(1)*ones(1,20)).'        ];
 
 % Feed coordinate matrix into IK to find all angles and package into matrix
 THETA_MATRIX = [0 0 0 0];
 
+%% --- IK 
 for i=1:length(XYZ_COORDS)
     [THETA_1, THETA_2, THETA_3, THETA_4] = IK(XYZ_COORDS(i,1), XYZ_COORDS(i,2), XYZ_COORDS(i,3));
     
