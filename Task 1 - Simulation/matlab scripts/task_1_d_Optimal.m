@@ -86,7 +86,7 @@ XYZ_COORDS = [XYZ_COORDS ; flip([(X_COORDS(1)*ones(1,20)).'  (Y_COORDS(1)*ones(1
 XYZ_COORDS = [XYZ_COORDS ;       (X_COORDS).'                (Y_COORDS(1)*ones(1,20)).'  (Z_COORDS(1)*ones(1,20)).'        ];
 
 % Feed coordinate matrix into IK to find all angles and package into matrix
-THETA_MATRIX = [0 0 0 0];
+THETA_MATRIX = [0 0 0 0 0];
 T_1 = 0;
 T_2 = 10.6388;
 T_3 = -79.2528;
@@ -94,11 +94,7 @@ T_4 = -0.1084;
 %% --- IK 
 for i=1:length(XYZ_COORDS)
     [THETA_1, THETA_2, THETA_3, THETA_4, PHI, RAW_THETA1, RAW_THETA2, RAW_THETA3, RAW_THETA4] = IK_Optimal(XYZ_COORDS(i,1), XYZ_COORDS(i,2), XYZ_COORDS(i,3), T_1, T_2, T_3, T_4);
-    T_1 = RAW_THETA1;
-    T_2 = RAW_THETA2;
-    T_3 = RAW_THETA3;
-    T_4 = RAW_THETA4;
-    THETA_MATRIX = [THETA_MATRIX ; [THETA_1, THETA_2, THETA_3, THETA_4]];
+    THETA_MATRIX = [THETA_MATRIX ; [THETA_1, THETA_2, THETA_3, THETA_4, PHI]];
 end
 
 % Angle matrices checks
@@ -135,6 +131,7 @@ for i = 1:length(THETA_MATRIX)
     THETA_2 = THETA_MATRIX(i, 2);
     THETA_3 = THETA_MATRIX(i, 3);
     THETA_4 = THETA_MATRIX(i, 4);
+    PHI = THETA_MATRIX(i, 5);
 
     %% --- Plot settings    
     % Annotations
