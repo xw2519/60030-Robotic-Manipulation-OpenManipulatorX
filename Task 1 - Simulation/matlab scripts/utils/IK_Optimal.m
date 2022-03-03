@@ -152,26 +152,25 @@ function [theta_1, theta_2, theta_3, theta_4, phi, RAW_OPT_T1, RAW_OPT_T2, RAW_O
     phi_top_opt = T2_TOP_OPT+T3_TOP_OPT+T4_TOP_OPT;
     %% Compare outputed optimal thetas from elbow and up and return best thetas
     if (OPT_DIST_TOP > OPT_DIST_BOT)
+        RAW_OPT_T1 = T1_BOT_OPT;
+        RAW_OPT_T2 = T2_BOT_OPT;
+        RAW_OPT_T3 = T3_BOT_OPT;
+        RAW_OPT_T4 = T4_BOT_OPT;
         T2_BOT_OPT =  T2_BOT_OPT - (90 - constant);
         theta_1 = T1_BOT_OPT;
         theta_2 = -1*T2_BOT_OPT;
         theta_3 = T3_BOT_OPT + constant;
         theta_4 = T4_BOT_OPT; 
         phi = theta_2 + theta_3 + theta_4;
-        disp(phi)
-        RAW_OPT_T1 = T1_BOT_OPT;
-        RAW_OPT_T2 = T2_BOT_OPT;
-        RAW_OPT_T3 = T3_BOT_OPT;
-        RAW_OPT_T4 = T4_BOT_OPT;
     elseif (OPT_DIST_TOP <= OPT_DIST_BOT)
+        RAW_OPT_T1 = T1_TOP_OPT;
+        RAW_OPT_T2 = T2_TOP_OPT;
+        RAW_OPT_T3 = T3_TOP_OPT;
+        RAW_OPT_T4 = T4_TOP_OPT;
         T2_BOT_OPT =  T2_BOT_OPT - (90 - constant);
         theta_1 = T1_TOP_OPT;
         theta_2 = -1*T2_BOT_OPT;
         theta_3 = T3_TOP_OPT + constant;
         theta_4 = T4_TOP_OPT; 
         phi = theta_2 + theta_3 + theta_4;
-        RAW_OPT_T1 = T1_TOP_OPT;
-        RAW_OPT_T2 = T2_TOP_OPT;
-        RAW_OPT_T3 = T3_TOP_OPT;
-        RAW_OPT_T4 = T4_TOP_OPT;
     end 
