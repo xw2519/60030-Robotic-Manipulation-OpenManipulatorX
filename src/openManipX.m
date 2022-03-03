@@ -25,7 +25,7 @@ classdef openManipX
 
         % Default setting
         BAUDRATE                    = 1000000;
-        DEVICENAME                  = 'COM5';       % Check which port is being used on your controller
+        DEVICENAME                  = 'COM6';       % Check which port is being used on your controller
                                                     % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'      
         TORQUE_ENABLE               = 1;            % Value for enabling the torque
         TORQUE_DISABLE              = 0;            % Value for disabling the torque
