@@ -157,7 +157,7 @@ function [theta_1, theta_2, theta_3, theta_4, phi, RAW_OPT_T1, RAW_OPT_T2, RAW_O
         theta_2 = -1*T2_BOT_OPT;
         theta_3 = T3_BOT_OPT + constant;
         theta_4 = T4_BOT_OPT; 
-        phi = phi_bot_opt;
+        phi = theta_2 + theta_3 + theta_4;
         disp(phi)
         RAW_OPT_T1 = T1_BOT_OPT;
         RAW_OPT_T2 = T2_BOT_OPT;
@@ -169,8 +169,7 @@ function [theta_1, theta_2, theta_3, theta_4, phi, RAW_OPT_T1, RAW_OPT_T2, RAW_O
         theta_2 = -1*T2_BOT_OPT;
         theta_3 = T3_TOP_OPT + constant;
         theta_4 = T4_TOP_OPT; 
-        phi = phi_top_opt;
-        disp(phi)
+        phi = theta_2 + theta_3 + theta_4;
         RAW_OPT_T1 = T1_TOP_OPT;
         RAW_OPT_T2 = T2_TOP_OPT;
         RAW_OPT_T3 = T3_TOP_OPT;
