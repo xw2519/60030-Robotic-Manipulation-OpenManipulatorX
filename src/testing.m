@@ -22,7 +22,7 @@ pause(2);
 %Getting into cube position
 write(arm, 11, 1194.666667);
 pause(2)
-write(arm, 12, 1945.029344);  
+write(arm, 12, 2186.684871);  
 pause(2)
 write(arm, 14, 2329.366756); 
 pause(2)

@@ -2,12 +2,12 @@
 
 
 Raw theta1
-   15.9454 -> 90+theta1 = 105.9454 -> 1194.666667 conversion (90+theta1)
+   15.9454 -> 90+theta1 = 105.9454 -> 1194.666667 conversion (90+theta1), conversion to unity (90-theta1)
 
 Raw theta2
-    1.5695 -> 180+9.050155276= 1945.029344 conversion (180+(theta2-10.6))
+    12.1891 -> 180+(12.1891-10.61965528)= 2065.856793???? think this one is right?, 1945.029344 ---- conversion (180+(theta2-10.61965528)), conversion to unity (theta2)
 Raw theta3
- -116.0814 -> 2344.748373, 2392 conversion (180+(-theta3-79.4))
+ -116.0814 -> 2465.576451 ---- conversion (180+(-theta3-79.4)), conversion to unity (-theta3)
 
 Raw theta4
-  -24.7295 -> 2329.366756 conversion(-theta4)
+  -24.7295 -> 2329.366756 conversion(-theta4) conversion to unity
