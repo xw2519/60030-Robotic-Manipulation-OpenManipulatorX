@@ -1,4 +1,4 @@
-function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
+function [RAW_THETA_1, RAW_THETA_2, RAW_THETA_3, RAW_THETA_4] = IK(P_X, P_Y, P_Z, PHI)
     %% --- Constants
     A_2 = 0.130;
     A_3 = 0.124;
@@ -13,7 +13,6 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     R_3 = P_R;
     Z_3 = P_Z - 0.077;
 
-    PHI = 0;
 
     R_2 = R_3 - A_4*cosd(PHI);
     Z_2 = Z_3 - A_4*sind(PHI);
@@ -49,6 +48,10 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     %% --- Theta 4
     THETA_4 = PHI - THETA_3 - 90 + THETA_2;
 
+    RAW_THETA_1 = THETA_1;
+    RAW_THETA_2 = THETA_2;
+    RAW_THETA_3 = THETA_3;
+    RAW_THETA_4 = THETA_4;
     %% --- Converting raw thetas into format required by FK
     THETA_2 =  THETA_2 - (90 - constant);
     THETA_2 = -1*THETA_2;
