@@ -11,7 +11,9 @@ classdef openManipX
         ADDR_PRO_PRESENT_POSITION   = 132;          % Present position of the servo
         ADDR_PRO_OPERATING_MODE     = 11;           % Sets between Current, Velocity, Position Control Mode 
         ADDR_PRO_VELOCITY           = 112;          % Controls the velocity of the servos
-
+        ADDR_MAX_POS                = 48; 
+        ADDR_MIN_POS                = 52; 
+        
         %% ---- Load Dynamixel Devices ---- %%
         DXL_ID1_BaseRotation        = 11;          
         DXL_ID2_Shoulder            = 12;    
@@ -24,8 +26,8 @@ classdef openManipX
         PROTOCOL_VERSION            = 2.0;          % See which protocol version is used in the Dynamixel
 
         % Default setting
-        BAUDRATE                    = 1000000;
-        DEVICENAME                  = 'COM4';       % Check which port is being used on your controller
+        BAUDRATE                    = 115200;
+        DEVICENAME                  = 'COM3';       % Check which port is being used on your controller
                                                     % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'      
         TORQUE_ENABLE               = 1;            % Value for enabling the torque
         TORQUE_DISABLE              = 0;            % Value for disabling the torque
@@ -38,9 +40,12 @@ classdef openManipX
         COMM_TX_FAIL                = -1001;        % Communication Tx Failed
 
         BYTE_LENGTH                 = 4;
+        
+        MIN_POS                     = [600, 600, 600, 600, 600]; % Min positions for each servo(in raw encoding format)
+        MAX_POS                     = [3400, 3400, 3400, 3400, 3400]; % Max positions for each servo(in raw encoding format)
     end
     
-    properties(GetAccess=private)
+    properties(GetAccess = private)
         PORT_NUM
         LIB_NAME
         GROUPWRITE_NUM
@@ -316,7 +321,7 @@ classdef openManipX
             logger(mfilename, "Log: Robotic arm deactivated")
         end
         
-        %% --- Servo settings --- %%
+        %% --- Servo modes --- %%
         function position_control_mode(obj)    
             logger(mfilename, "Log: Setting Position Control mode") 
             
@@ -328,6 +333,14 @@ classdef openManipX
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_OPERATING_MODE, 3);
             
             logger(mfilename, "Log: Position Control mode activated")
+        end
+        
+        function velocity_control_mode(obj)    
+            logger(mfilename, "Log: Setting Velocity Control mode") 
+            
+            ...
+            
+            logger(mfilename, "Log: Position Velocity mode activated")
         end
         
         function toggle_torque(obj, torque_toggle)
@@ -381,8 +394,9 @@ classdef openManipX
             
             logger(mfilename, "Log: Torque Mode toggled successfully")
         end
-   
-        function set_servo_speed_limits(obj, DXL_VELOCITY)
+        
+        %% --- Servo settings --- %%
+        function set_all_servo_speed_limits(obj, DXL_VELOCITY)
             logger(mfilename, "Log: Servo speeds limited") 
             
             write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
@@ -430,7 +444,120 @@ classdef openManipX
                 fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID5_Gripper);
             end
             
-            logger(mfilename, "Log: Servo speeds limited") %
+            logger(mfilename, "Log: Servo speeds limited") 
+        end
+        
+        function set_servo_speed_limit(obj, ID, DXL_VELOCITY)
+            logger(mfilename, "Log: Servo speeds limited") 
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, ID, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', ID);
+            end
+            
+            logger(mfilename, "Log: Servo speeds limited") 
+        end
+        
+        function set_all_servo_range_motion(obj)
+           logger(mfilename, "Log: Servo range motion limiting initiated") 
+            
+           % Limiting max range
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(1)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(2)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(3)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(4)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(5)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+
+           % Limiting min range
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(1)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(2)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(3)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(4)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(5)); 
+           if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+           end
+           
+           logger(mfilename, "Log: Servo range motion limiting completed") 
         end
     
         %% --- Write and read functions --- %%
@@ -619,6 +746,155 @@ classdef openManipX
             end
             
             logger(mfilename, "Gripper closed") 
+        end
+        
+        %% --- Task functions --- %%
+        function pick_up_cube_at_coord(obj, P_X, P_Y, P_Z, PHI)
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            P_Z_CALIBRATED = P_Z + 0.00965; 
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
+            [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_CUBE), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_CUBE), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_CUBE), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_CUBE), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_GRIP), "Fatal error: THETA 1 angle to grip cube is unreachable");
+            assert(isreal(SERVO_THETA_2_GRIP), "Fatal error: THETA 2 angle to grip cube is unreachable");
+            assert(isreal(SERVO_THETA_3_GRIP), "Fatal error: THETA 3 angle to grip cube is unreachable");
+            assert(isreal(SERVO_THETA_4_GRIP), "Fatal error: THETA 4 angle to grip cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            % Move arm down 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
+            
+            % Grip the cube 
+            close_gripper(obj);
+            
+            % Move arm back up
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+        end
+        
+        function pick_up_cube_at(arm_obj, trajectory_obj, ROW, COLUMN, PHI)
+            % Get board location specified 
+            [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
+            
+            % Modify P_Z to include height of cube
+            P_Z_WITH_CUBE = P_Z + 0.025;
+            
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
+            [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_CUBE), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_CUBE), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_CUBE), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_CUBE), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_GRIP), "Fatal error: THETA 1 angle to grip cube is unreachable");
+            assert(isreal(SERVO_THETA_2_GRIP), "Fatal error: THETA 2 angle to grip cube is unreachable");
+            assert(isreal(SERVO_THETA_3_GRIP), "Fatal error: THETA 3 angle to grip cube is unreachable");
+            assert(isreal(SERVO_THETA_4_GRIP), "Fatal error: THETA 4 angle to grip cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            % Move arm down 
+            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
+            
+            % Grip the cube 
+            close_gripper(obj);
+            
+            % Move arm back up
+            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+        end
+        
+        function drop_cube_at_coord(obj, P_X, P_Y, P_Z, PHI)
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            P_Z_CALIBRATED = P_Z + 0.00965; 
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
+            [SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP] = IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_CUBE), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_CUBE), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_CUBE), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_CUBE), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_DROP), "Fatal error: THETA 1 angle to drop cube is unreachable");
+            assert(isreal(SERVO_THETA_2_DROP), "Fatal error: THETA 2 angle to drop cube is unreachable");
+            assert(isreal(SERVO_THETA_3_DROP), "Fatal error: THETA 3 angle to drop cube is unreachable");
+            assert(isreal(SERVO_THETA_4_DROP), "Fatal error: THETA 4 angle to drop cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            % Move arm down 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP);
+            
+            % Drop the cube 
+            open_gripper(obj);
+            
+            % Move arm back up
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+        end
+
+        function drop_cube_at(arm_obj, trajectory_obj, ROW, COLUMN, PHI)
+            % Get board location specified 
+            [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
+            
+            % Modify P_Z to include height of cube
+            P_Z_WITH_CUBE = P_Z + 0.025;
+            
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
+            [SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP] = IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_CUBE), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_CUBE), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_CUBE), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_CUBE), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_DROP), "Fatal error: THETA 1 angle to drop cube is unreachable");
+            assert(isreal(SERVO_THETA_2_DROP), "Fatal error: THETA 2 angle to drop cube is unreachable");
+            assert(isreal(SERVO_THETA_3_DROP), "Fatal error: THETA 3 angle to drop cube is unreachable");
+            assert(isreal(SERVO_THETA_4_DROP), "Fatal error: THETA 4 angle to drop cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            % Move arm down 
+            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP);
+            
+            % Drop the cube 
+            open_gripper(obj);
+            
+            % Move arm back up
+            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
         end
     end
 end

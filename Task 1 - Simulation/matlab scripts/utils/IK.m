@@ -1,3 +1,5 @@
+% function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
+
 function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     %% --- Constants
     A_2 = 0.130;
@@ -29,7 +31,8 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     else
         THETA_1 = atand(P_Y/P_X);
     end
-
+    
+    RAW_THETA_1 = THETA_1;
 
     %% --- Theta 3 
     ARGUMENT = ((R_2^2 + Z_2^2 - (A_2^2 + A_3^2))/(2*A_2*A_3));
@@ -37,6 +40,8 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     % THETA_3 = atan2d(ARGUMENT_2, ARGUMENT);
 
     THETA_3 = SIGN*acosd(ARGUMENT);
+    
+    RAW_THETA_3 = THETA_3;
 
     %% --- Theta 2
 
@@ -48,8 +53,12 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
 
     %% --- Theta 4
     THETA_4 = PHI - THETA_3 - 90 + THETA_2;
+    
+    RAW_THETA_4 = THETA_4;
 
     %% --- Converting raw thetas into format required by FK
+    RAW_THETA_2 = THETA_2;
+    
     THETA_2 =  THETA_2 - (90 - constant);
     THETA_2 = -1*THETA_2;
 

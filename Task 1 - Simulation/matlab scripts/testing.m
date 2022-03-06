@@ -1,0 +1,14 @@
+[BASE_ROTATION_TM, SHOULDER_TM, ELBOW_TM, WRIST_TM, EE_TM] = FK(0, 45, -45, -45);
+
+
+disp(EE_TM);
+
+
+[THETA_1, THETA_2, THETA_3, THETA_4] = IK(0.1397, 0, 0.0952);
+
+
+disp(THETA_1);
+disp(THETA_2);
+disp(THETA_3);
+disp(THETA_4);
+

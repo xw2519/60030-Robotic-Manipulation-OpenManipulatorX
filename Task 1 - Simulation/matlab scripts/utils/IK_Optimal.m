@@ -38,7 +38,7 @@ function [theta_1, theta_2, theta_3, theta_4, phi, RAW_OPT_T1, RAW_OPT_T2, RAW_O
 
         % THETA_3 = atan2d(ARGUMENT_2, ARGUMENT);
 
-        THETA_3 = SIGN*acosd(ARGUMENT);;
+        THETA_3 = SIGN*acosd(ARGUMENT);
 
        %% --- Theta 2 --- %%
 
@@ -149,7 +149,9 @@ function [theta_1, theta_2, theta_3, theta_4, phi, RAW_OPT_T1, RAW_OPT_T2, RAW_O
             end
         end
     end
+    
     phi_top_opt = T2_TOP_OPT+T3_TOP_OPT+T4_TOP_OPT;
+    
     %% Compare outputed optimal thetas from elbow and up and return best thetas
     if (OPT_DIST_TOP > OPT_DIST_BOT)
         RAW_OPT_T1 = T1_BOT_OPT;

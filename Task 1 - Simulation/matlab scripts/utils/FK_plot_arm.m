@@ -20,9 +20,9 @@ clear;
 
 %% --- Constants 
 THETA_1 = 0;
-THETA_2 = -45;
-THETA_3 = 6.0341;
-THETA_4 = 16.6865;
+THETA_2 = 117.08;
+THETA_3 = -85.32;
+THETA_4 = -38.416;
 
 %% --- Plot settings
 arm_plot = plot3([0 0], [0 0], [0 0]);
@@ -104,4 +104,4 @@ plot3(F_5_Z(1, :), F_5_Z(2, :), F_5_Z(3, :), '-b', 'LineWidth',2);
 
 %% --- Plot settings
 grid on
-axis([0 0.5 -0.5 0.5 0 0.5])
+axis([-0.2 0.5 -0.5 0.5 0 0.5])
