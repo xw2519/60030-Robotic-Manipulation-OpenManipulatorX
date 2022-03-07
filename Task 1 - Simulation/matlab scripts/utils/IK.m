@@ -56,6 +56,10 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     
     RAW_THETA_4 = THETA_4;
 
+    RAW_THETA_1 = THETA_1;
+    RAW_THETA_2 = THETA_2;
+    RAW_THETA_3 = THETA_3;
+    RAW_THETA_4 = THETA_4;
     %% --- Converting raw thetas into format required by FK
     RAW_THETA_2 = THETA_2;
     
