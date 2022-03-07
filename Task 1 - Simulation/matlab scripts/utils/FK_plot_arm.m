@@ -19,10 +19,10 @@ clf;
 clear;
 
 %% --- Constants 
-THETA_1 = 0;
-THETA_2 = 117.08;
-THETA_3 = -85.32;
-THETA_4 = -38.416;
+THETA_1 = 8.1301;
+THETA_2 = (-14.4628);
+THETA_3 = 3.3307;
+THETA_4 = (-78.8679);
 
 %% --- Plot settings
 arm_plot = plot3([0 0], [0 0], [0 0]);

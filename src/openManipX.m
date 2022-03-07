@@ -6,6 +6,7 @@ classdef openManipX
     %% --- Class variables --- %%
     properties(Constant)
         %% --- Dynamixel addresses --- %%
+        ADDR_PRO_ACCELERATION       = 108;
         ADDR_PRO_TORQUE_ENABLE      = 64;           % Torque Enable(64) determines Torque ON/OFF. Writing ‘1’ to Toque Enable’s address will turn on the Torque           
         ADDR_PRO_GOAL_POSITION      = 116;          % Sets desired position
         ADDR_PRO_PRESENT_POSITION   = 132;          % Present position of the servo
@@ -46,9 +47,12 @@ classdef openManipX
     end
     
     properties(GetAccess = private)
-        PORT_NUM
-        LIB_NAME
+        DXL_ADDPARAM_RESULT
+        DXL_GETDATA_RESULT
+        GROUPREAD_NUM
         GROUPWRITE_NUM
+        LIB_NAME
+        PORT_NUM
     end
     
     % properties
@@ -91,6 +95,13 @@ classdef openManipX
 
             % Initialize PacketHandler Structs
             packetHandler();
+            
+            % Initiate group write object
+            obj.DXL_ADDPARAM_RESULT = false;
+            obj.DXL_GETDATA_RESULT = false;
+            
+            obj.GROUPREAD_NUM = groupSyncRead(obj.PORT_NUM, obj.PROTOCOL_VERSION, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION);
+            obj.GROUPWRITE_NUM = groupSyncWrite(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.ADDR_PRO_GOAL_POSITION, obj.BYTE_LENGTH);
 
             % Open port
             if (openPort(obj.PORT_NUM))
@@ -113,50 +124,18 @@ classdef openManipX
             end
             
             % Ping servos to verify connection
-            DXL_ID1_MODEL_NUMBER = pingGetModelNum(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation);
+            % Try to broadcast ping the Dynamixel
+            broadcastPing(obj.PORT_NUM, obj.PROTOCOL_VERSION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
-            
-            fprintf('Log: [ID:%03d] ping Succeeded. Dynamixel model number : %d\n', obj.DXL_ID1_BaseRotation, DXL_ID1_MODEL_NUMBER);
-            
-            DXL_ID2_MODEL_NUMBER = pingGetModelNum(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+
+            fprintf('Detected Dynamixel : \n');
+            for SERVO_ID = 0 : MAX_ID
+              if getBroadcastPingResult(obj.PORT_NUM, obj.PROTOCOL_VERSION, SERVO_ID)
+                fprintf('[ID:%03d]\n', SERVO_ID);
+              end
             end
-            
-            fprintf('Log: [ID:%03d] ping Succeeded. Dynamixel model number : %d\n', obj.DXL_ID2_Shoulder, DXL_ID2_MODEL_NUMBER);
-            
-            DXL_ID3_MODEL_NUMBER = pingGetModelNum(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            fprintf('Log: [ID:%03d] ping Succeeded. Dynamixel model number : %d\n', obj.DXL_ID3_Elbow, DXL_ID3_MODEL_NUMBER);
-            
-            DXL_ID4_MODEL_NUMBER = pingGetModelNum(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            fprintf('Log: [ID:%03d] ping Succeeded. Dynamixel model number : %d\n', obj.DXL_ID4_Wrist, DXL_ID4_MODEL_NUMBER);
-            
-            DXL_ID5_MODEL_NUMBER = pingGetModelNum(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            fprintf('Log: [ID:%03d] ping Succeeded. Dynamixel model number : %d\n', obj.DXL_ID5_Gripper, DXL_ID5_MODEL_NUMBER);
             
             % Move robotic arm initial starting position
             write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 15, obj.ADDR_PRO_GOAL_POSITION, 2382.0);
@@ -176,9 +155,6 @@ classdef openManipX
             % elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
             %     printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             % end
-            
-            % Initiate group write object
-            % obj.GROUPWRITE_NUM = groupSyncWrite(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.ADDR_PRO_GOAL_POSITION, obj.BYTE_LENGTH);
             
             logger(mfilename, "Log: Robotic arm activated and ready for operations")
         end
@@ -334,15 +310,7 @@ classdef openManipX
             
             logger(mfilename, "Log: Position Control mode activated")
         end
-        
-        function velocity_control_mode(obj)    
-            logger(mfilename, "Log: Setting Velocity Control mode") 
-            
-            ...
-            
-            logger(mfilename, "Log: Position Velocity mode activated")
-        end
-        
+                
         function toggle_torque(obj, torque_toggle)
             logger(mfilename, "Log: Toggling Torque Mode")
             
@@ -396,6 +364,21 @@ classdef openManipX
         end
         
         %% --- Servo settings --- %%
+        function set_servo_speed_limit(obj, ID, DXL_VELOCITY)
+            logger(mfilename, "Log: Setting servo speed limit") 
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, ID, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', ID);
+            end
+            
+            logger(mfilename, "Log: Servo speeds limited") 
+        end
+        
         function set_all_servo_speed_limits(obj, DXL_VELOCITY)
             logger(mfilename, "Log: Servo speeds limited") 
             
@@ -447,10 +430,13 @@ classdef openManipX
             logger(mfilename, "Log: Servo speeds limited") 
         end
         
-        function set_servo_speed_limit(obj, ID, DXL_VELOCITY)
-            logger(mfilename, "Log: Servo speeds limited") 
+        function set_servo_acceleration(obj, ID, DXL_ACCELERATION)
+            % Assuming Time-based Profile
+            % Range: 0 ~ 32737 where '0' represents an infinite acceleration time('0 [msec]').
+            % Profile Acceleration(108, Acceleration time) will not exceed 50% of Profile Velocity (112, the time span to reach the velocity of the Profile) value.
+            logger(mfilename, "Log: Setting servo acceleration limit") 
             
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, ID, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, ID, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
@@ -459,7 +445,58 @@ classdef openManipX
                 fprintf('Log: Dynamixel #%d speed has been successfully limited \n', ID);
             end
             
-            logger(mfilename, "Log: Servo speeds limited") 
+            logger(mfilename, "Log: Servo acceleration limit set")
+        end
+        
+        function set_all_servo_acceleration_limits(obj, DXL_ACCELERATION)
+            logger(mfilename, "Log: Setting servo acceleration limit") 
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID1_BaseRotation);
+            end
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID2_Shoulder);
+            end
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID3_Elbow);
+            end
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID4_Wrist);
+            end
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION); 
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            else
+                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID5_Gripper);
+            end
+            
+            logger(mfilename, "Log: Servo acceleration limit set") 
         end
         
         function set_all_servo_range_motion(obj)
@@ -597,7 +634,7 @@ classdef openManipX
             logger(mfilename, msg)
         end
         
-        function write_angles_to_all_servos(obj, ID1_ANGLE, ID2_ANGLE, ID3_ANGLE, ID4_ANGLE, ID5_ANGLE)
+        function write_angles_to_all_servos(obj, ID1_ANGLE, ID2_ANGLE, ID3_ANGLE, ID4_ANGLE)
             msg = append('Writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
             logger(mfilename, msg) % Log
             
@@ -606,42 +643,36 @@ classdef openManipX
             ID2_VALUE = ID2_ANGLE / 0.088;
             ID3_VALUE = ID3_ANGLE / 0.088;
             ID4_VALUE = ID4_ANGLE / 0.088;
-            ID5_VALUE = ID5_ANGLE / 0.088;
 
             % Add goal position values to the Syncwrite storage
-            dxl_addparam_result = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID1_BaseRotation, typecast(int32(ID1_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
-            if dxl_addparam_result ~= true
+            obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID1_BaseRotation, typecast(int32(ID1_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
+            if obj.DXL_ADDPARAM_RESULT ~= true
                 fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID1_BaseRotation);
                 return;
             end
             
-            dxl_addparam_result = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID2_Shoulder, typecast(int32(ID2_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
-            if dxl_addparam_result ~= true
+            obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID2_Shoulder, typecast(int32(ID2_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
+            if obj.DXL_ADDPARAM_RESULT ~= true
                 fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID2_Shoulder);
                 return;
             end
             
-            dxl_addparam_result = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID3_Elbow, typecast(int32(ID3_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
-            if dxl_addparam_result ~= true
+            obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID3_Elbow, typecast(int32(ID3_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
+            if obj.DXL_ADDPARAM_RESULT ~= true
                 fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID3_Elbow);
                 return;
             end
             
-            dxl_addparam_result = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID4_Wrist, typecast(int32(ID4_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
-            if dxl_addparam_result ~= true
+            obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID4_Wrist, typecast(int32(ID4_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
+            if obj.DXL_ADDPARAM_RESULT ~= true
                 fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID4_Wrist);
-                return;
-            end
-            
-            dxl_addparam_result = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID5_Gripper, typecast(int32(ID5_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
-            if dxl_addparam_result ~= true
-                fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID5_Gripper);
                 return;
             end
             
             logger(mfilename, "Log: All angles converted and stored. Attempting to write simultaneously to all servos")
             
-            groupSyncWriteTxPacket(obj.GROUPWRITE_NUM); % Syncwrite goal position
+            % Write in sync to all servo
+            groupSyncWriteTxPacket(obj.GROUPWRITE_NUM); 
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
@@ -713,8 +744,6 @@ classdef openManipX
             ID13_Angle = (0.088 * typecast(single(ID13_Value), 'single'));
             ID14_Angle = (0.088 * typecast(single(ID14_Value), 'single'));
             ID15_Angle = (0.088 * typecast(single(ID15_Value), 'single'));
-            
-            logger(mfilename, "Log: Successfully read all servo raw encoder values")
         end
 
         %% --- Gripper functions --- %%
@@ -772,15 +801,19 @@ classdef openManipX
             
             % Move to coordinate directly above cube by 0.025 m
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            open_gripper(obj);
+            
+            pause(3);
             
             % Move arm down 
             write_angles_to_all_servos(obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
             
             % Grip the cube 
-            close_gripper(obj);
+            close_gripper(obj); 
             
             % Move arm back up
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            pause(3);
         end
         
         function pick_up_cube_at(arm_obj, trajectory_obj, ROW, COLUMN, PHI)
@@ -812,6 +845,9 @@ classdef openManipX
             
             % Move to coordinate directly above cube by 0.025 m
             write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            open_gripper(obj);
+            
+            pause(3);
             
             % Move arm down 
             write_angles_to_all_servos(arm_obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
@@ -821,6 +857,7 @@ classdef openManipX
             
             % Move arm back up
             write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            pause(3);
         end
         
         function drop_cube_at_coord(obj, P_X, P_Y, P_Z, PHI)
@@ -895,6 +932,23 @@ classdef openManipX
             
             % Move arm back up
             write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+        end
+        
+        function rotate_cube_forward_at(obj, ROW, COLUMN, PHI)
+            % - Pick up cube at position
+            % - Move upward 
+            % - Turn by negative PHI 
+            % - Move down and forward
+            ...
+        end
+        
+        function rotate_cube_backward_at(obj, ROW, COLUMN, PHI)
+            % Check if backward rotation is within range
+            % - Pick up cube at position
+            % - Move upward 
+            % - Turn by positive PHI 
+            % - Move down and forward
+            ...
         end
     end
 end

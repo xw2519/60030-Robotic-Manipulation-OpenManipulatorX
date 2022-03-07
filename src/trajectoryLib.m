@@ -50,18 +50,11 @@ classdef trajectoryLib
         ...
     end
     
-    %% --- Class methods --- %%
-    methods
-        %% --- Acrylic board functions --- %%
-        function [P_X, P_Y, P_Z] = get_board_location(obj, ROW, COLUMN)
-            P_X = obj.ACRYLIC_BOARD_X_COORDS(ROW, COLUMN);
-            P_Y = obj.ACRYLIC_BOARD_Y_COORDS(ROW, COLUMN);
-            P_Z = obj.ACRYLIC_BOARD_Z_COORDS(ROW, COLUMN);
-        end        
-        
+    %% --- Static Class methods --- %%
+    methods(Static)
         %% --- Converters --- %%
         function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = convert_to_servo_angles(THETA_1, THETA_2, THETA_3, THETA_4)
-            SERVO_THETA_1 = 180 + THETA_1;
+            SERVO_THETA_1 = 180 - THETA_1;
             SERVO_THETA_2 = 180 - THETA_2;
             SERVO_THETA_3 = 180 - THETA_3;
             SERVO_THETA_4 = 180 - THETA_4;
@@ -83,7 +76,8 @@ classdef trajectoryLib
         %% --- FK and IK --- %%
         function [P_X, P_Y, P_Z] = FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4)
             % Convert to FK angle format
-            THETA_1 = 180 + SERVO_THETA_1;
+            % THETA_1 = SERVO_THETA_1 - 180;
+            THETA_1 = -(180 - SERVO_THETA_1);
             THETA_2 = 180 - SERVO_THETA_2;
             THETA_3 = 180 - SERVO_THETA_3;
             THETA_4 = 180 - SERVO_THETA_4;
@@ -179,7 +173,7 @@ classdef trajectoryLib
 
             %% --- Converting raw angles into format required by FK
             FK_THETA_1 = RAW_THETA_1;
-            FK_THETA_2 =  -1*(RAW_THETA_2 - (90 - constant));
+            FK_THETA_2 = -1*(RAW_THETA_2 - (90 - constant));
             FK_THETA_3 = RAW_THETA_3 + constant;
             FK_THETA_4 = RAW_THETA_4;
             
@@ -194,7 +188,7 @@ classdef trajectoryLib
         function ANGLE_ARRAY = IK_array_with_PHI(COORD_ARRAY)
             ANGLE_ARRAY = [];
             
-            %% --- Constants
+            % Constants
             A_2 = 0.130;
             A_3 = 0.124;
             A_4 = 0.126;
@@ -217,7 +211,7 @@ classdef trajectoryLib
                 R_2 = R_3 - A_4*cosd(PHI);
                 Z_2 = Z_3 - A_4*sind(PHI);
             
-                %% --- Calculate angles
+                % Calculate angles
                 % Theta 1 
                 if ~(P_X<=0) && ~(P_Y<=0)  
                     RAW_THETA_1 = atand(P_Y/P_X);
@@ -247,32 +241,24 @@ classdef trajectoryLib
                 % Theta 4
                 RAW_THETA_4 = PHI - RAW_THETA_3 - 90 + RAW_THETA_2;
 
-                %% --- Converting raw angles into format required by FK
+                % Converting raw angles into format required by FK
                 FK_THETA_1 = RAW_THETA_1;
                 FK_THETA_2 =  -1*(RAW_THETA_2 - (90 - constant));
                 FK_THETA_3 = RAW_THETA_3 + constant;
                 FK_THETA_4 = RAW_THETA_4;
 
-                %% --- Converting angles into format required by servo
+                % Converting angles into format required by servo
                 SERVO_THETA_1 = 180 + FK_THETA_1;
                 SERVO_THETA_2 = 180 - FK_THETA_2;
                 SERVO_THETA_3 = 180 - FK_THETA_3;
                 SERVO_THETA_4 = 180 - FK_THETA_4;
                 
-                %% --- Store into array
+                % Store into array
                 ANGLE_ARRAY = [ANGLE_ARRAY; [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4]];
             end
         end
         
         %% --- Operation Functions --- %%
-        function rotate_cube_forward_at(P_X, P_Y, P_Z, rotate_n_times)
-            ...
-        end
-    
-        function rotate_cube_backward_at(P_X, P_Y, P_Z, rotate_n_times)
-            ...
-        end
-
         function draw_line(START_COORDS, END_COORDS)
             ...
         end
@@ -280,5 +266,15 @@ classdef trajectoryLib
         function draw_arc(ARC_CENTER, RADIUS, ARC_DEGREE, START_COORDS, END_COORDS)
             ...
         end
+    end
+    
+    %% --- Non-static Class methods --- %%
+    methods
+        %% --- Acrylic board functions --- %%
+        function [P_X, P_Y, P_Z] = get_board_location(obj, ROW, COLUMN)
+            P_X = obj.ACRYLIC_BOARD_X_COORDS(ROW, COLUMN);
+            P_Y = obj.ACRYLIC_BOARD_Y_COORDS(ROW, COLUMN);
+            P_Z = obj.ACRYLIC_BOARD_Z_COORDS(ROW, COLUMN);
+        end        
     end
 end

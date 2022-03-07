@@ -15,7 +15,7 @@ function [THETA_1, THETA_2, THETA_3, THETA_4] = IK(P_X, P_Y, P_Z)
     R_3 = P_R;
     Z_3 = P_Z - 0.077;
 
-    PHI = 0;
+    PHI = -45;
 
     R_2 = R_3 - A_4*cosd(PHI);
     Z_2 = Z_3 - A_4*sind(PHI);
