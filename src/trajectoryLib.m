@@ -54,7 +54,7 @@ classdef trajectoryLib
     methods(Static)
         %% --- Converters --- %%
         function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = convert_to_servo_angles(THETA_1, THETA_2, THETA_3, THETA_4)
-            SERVO_THETA_1 = (180-THETA_1); % (90+THETA_1);
+            SERVO_THETA_1 = (90+THETA_1); % (90+THETA_1);
             SERVO_THETA_2 = (180+(THETA_2-10.61965528));
             SERVO_THETA_3 = (180+(-THETA_3-79.38034472));
             SERVO_THETA_4 = (180-THETA_4);
@@ -64,7 +64,7 @@ classdef trajectoryLib
             SERVO_ANGLE_ARRAY_CONVERTED(length(SERVO_ANGLE_ARRAY), 4) = 0;
             
             for i = 1:length(SERVO_ANGLE_ARRAY)
-                SERVO_THETA_1 = (180-SERVO_ANGLE_ARRAY(i, 1)); % (90+SERVO_ANGLE_ARRAY(i, 1));
+                SERVO_THETA_1 = (90+SERVO_ANGLE_ARRAY(i, 1)); % (90+SERVO_ANGLE_ARRAY(i, 1));
                 SERVO_THETA_2 = (180+(SERVO_ANGLE_ARRAY(i, 2)-10.61965528));
                 SERVO_THETA_3 = (180+(-SERVO_ANGLE_ARRAY(i, 3)-79.38034472));
                 SERVO_THETA_4 = (180-SERVO_ANGLE_ARRAY(i, 4));
@@ -75,7 +75,7 @@ classdef trajectoryLib
         %% --- FK and IK --- %%
         function [P_X, P_Y, P_Z] = FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4)
             % Convert to FK angle format
-            THETA_1 = (180-SERVO_THETA_1); % (90+THETA_1);
+            THETA_1 = (SERVO_THETA_1-90); % (90+THETA_1);
             THETA_2 = SERVO_THETA_2 - 180 + 10.61965528;
             THETA_3 = -(SERVO_THETA_3 - 180 + 79.38034472);
             THETA_4 = (180-SERVO_THETA_4);
