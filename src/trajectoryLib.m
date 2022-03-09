@@ -6,18 +6,18 @@ classdef trajectoryLib
     %% --- Class variables --- %%
     properties(Constant)
         % Acrylic board coordinates 
-        ACRYLIC_BOARD_Z_COORDS = [ 0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198,    0,      0,      0,      0,      0,   0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198,    0,      0,      0,      0,      0,   0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198,    0,      0,      0,      0,      0,   0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198,    0,      0,      0,      0,      0,   0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198,    0,      0,      0,      0,      0,   0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198;
-                                   0.0198,  0.0198,  0.0198,  0.0198,  0.0198,  0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198, 0.0198; ];
+        ACRYLIC_BOARD_Z_COORDS = [ 0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150,    0,      0,      0,      0,      0,   0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150,    0,      0,      0,      0,      0,   0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150,    0,      0,      0,      0,      0,   0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150,    0,      0,      0,      0,      0,   0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150,    0,      0,      0,      0,      0,   0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150;
+                                   0.0150,  0.0150,  0.0150,  0.0150,  0.0150,  0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150, 0.0150; ];
     
         ACRYLIC_BOARD_Y_COORDS = [ 0.2000,  0.1750,  0.1500,  0.1250,  0.1000,  0.0750,    0,      0,      0,      0,      0,    -0.0750, -0.1000, -0.1250, -0.1500, -0.1750, -0.2000;
                                    0.2000,  0.1750,  0.1500,  0.1250,  0.1000,  0.0750,    0,      0,      0,      0,      0,    -0.0750, -0.1000, -0.1250, -0.1500, -0.1750, -0.2000;
@@ -54,21 +54,20 @@ classdef trajectoryLib
     methods(Static)
         %% --- Converters --- %%
         function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = convert_to_servo_angles(THETA_1, THETA_2, THETA_3, THETA_4)
-            SERVO_THETA_1 = 180 - THETA_1;
-            SERVO_THETA_2 = 180 - THETA_2;
-            SERVO_THETA_3 = 180 - THETA_3;
-            SERVO_THETA_4 = 180 - THETA_4;
+            SERVO_THETA_1 = (180-THETA_1); % (90+THETA_1);
+            SERVO_THETA_2 = (180+(THETA_2-10.61965528));
+            SERVO_THETA_3 = (180+(-THETA_3-79.38034472));
+            SERVO_THETA_4 = (180-THETA_4);
         end
 
         function SERVO_ANGLE_ARRAY_CONVERTED = convert_to_servo_angles_array(SERVO_ANGLE_ARRAY)
             SERVO_ANGLE_ARRAY_CONVERTED(length(SERVO_ANGLE_ARRAY), 4) = 0;
             
             for i = 1:length(SERVO_ANGLE_ARRAY)
-                SERVO_THETA_1 = 180 + SERVO_ANGLE_ARRAY(i, 1);
-                SERVO_THETA_2 = 180 - SERVO_ANGLE_ARRAY(i, 2);
-                SERVO_THETA_3 = 180 - SERVO_ANGLE_ARRAY(i, 3);
-                SERVO_THETA_4 = 180 - SERVO_ANGLE_ARRAY(i, 4);
-                
+                SERVO_THETA_1 = (180-SERVO_ANGLE_ARRAY(i, 1)); % (90+SERVO_ANGLE_ARRAY(i, 1));
+                SERVO_THETA_2 = (180+(SERVO_ANGLE_ARRAY(i, 2)-10.61965528));
+                SERVO_THETA_3 = (180+(-SERVO_ANGLE_ARRAY(i, 3)-79.38034472));
+                SERVO_THETA_4 = (180-SERVO_ANGLE_ARRAY(i, 4));
                 SERVO_ANGLE_ARRAY_CONVERTED(i) = [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4];
             end
         end
@@ -76,11 +75,14 @@ classdef trajectoryLib
         %% --- FK and IK --- %%
         function [P_X, P_Y, P_Z] = FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4)
             % Convert to FK angle format
-            % THETA_1 = SERVO_THETA_1 - 180;
-            THETA_1 = -(180 - SERVO_THETA_1);
-            THETA_2 = 180 - SERVO_THETA_2;
-            THETA_3 = 180 - SERVO_THETA_3;
-            THETA_4 = 180 - SERVO_THETA_4;
+            THETA_1 = (180-SERVO_THETA_1); % (90+THETA_1);
+            THETA_2 = SERVO_THETA_2 - 180 + 10.61965528;
+            THETA_3 = -(SERVO_THETA_3 - 180 + 79.38034472);
+            THETA_4 = (180-SERVO_THETA_4);
+            
+            
+            THETA_2 = -1*(THETA_2 - (90 - constant));
+            THETA_3 = THETA_3 + constant;
             
             % Feed angles into FK matrices
             T_0_1 = [   cosd(THETA_1)                       -sind(THETA_1)                      0               0;
@@ -170,18 +172,19 @@ classdef trajectoryLib
 
             % Theta 4
             RAW_THETA_4 = PHI - RAW_THETA_3 - 90 + RAW_THETA_2;
-
-            %% --- Converting raw angles into format required by FK
-            FK_THETA_1 = RAW_THETA_1;
-            FK_THETA_2 = -1*(RAW_THETA_2 - (90 - constant));
-            FK_THETA_3 = RAW_THETA_3 + constant;
-            FK_THETA_4 = RAW_THETA_4;
             
             %% --- Converting angles into format required by servo
-            SERVO_THETA_1 = 180 + FK_THETA_1;
-            SERVO_THETA_2 = 180 - FK_THETA_2;
-            SERVO_THETA_3 = 180 - FK_THETA_3;
-            SERVO_THETA_4 = 180 - FK_THETA_4;
+            SERVO_THETA_1 = (90+RAW_THETA_1);
+            SERVO_THETA_2 = (180+(RAW_THETA_2-10.61965528));
+            SERVO_THETA_3 = (180+(-RAW_THETA_3-79.38034472));
+            SERVO_THETA_4 = (180-RAW_THETA_4);
+
+            %% --- Converting raw angles into format required by FK
+            %FK_THETA_1 = RAW_THETA_1;
+            %FK_THETA_2 = -1*(RAW_THETA_2 - (90 - constant));
+            %FK_THETA_3 = RAW_THETA_3 + constant;
+            %FK_THETA_4 = RAW_THETA_4;
+            
         end
         
         % COORD_ARRAY = [X, Y, Z, PHI]
@@ -241,17 +244,11 @@ classdef trajectoryLib
                 % Theta 4
                 RAW_THETA_4 = PHI - RAW_THETA_3 - 90 + RAW_THETA_2;
 
-                % Converting raw angles into format required by FK
-                FK_THETA_1 = RAW_THETA_1;
-                FK_THETA_2 =  -1*(RAW_THETA_2 - (90 - constant));
-                FK_THETA_3 = RAW_THETA_3 + constant;
-                FK_THETA_4 = RAW_THETA_4;
-
                 % Converting angles into format required by servo
-                SERVO_THETA_1 = 180 + FK_THETA_1;
-                SERVO_THETA_2 = 180 - FK_THETA_2;
-                SERVO_THETA_3 = 180 - FK_THETA_3;
-                SERVO_THETA_4 = 180 - FK_THETA_4;
+                SERVO_THETA_1 = (90+RAW_THETA_1);
+                SERVO_THETA_2 = (180+(RAW_THETA_2-10.61965528));
+                SERVO_THETA_3 = (180+(-RAW_THETA_3-79.38034472));
+                SERVO_THETA_4 = (180-RAW_THETA_4);
                 
                 % Store into array
                 ANGLE_ARRAY = [ANGLE_ARRAY; [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4]];

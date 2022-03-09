@@ -637,12 +637,12 @@ classdef openManipX
         function write_angles_to_all_servos(obj, ID1_ANGLE, ID2_ANGLE, ID3_ANGLE, ID4_ANGLE)
             msg = append('Writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
             logger(mfilename, msg) % Log
-            
+            constant = 45/512;
             % Convert to raw encoder values
-            ID1_VALUE = ID1_ANGLE / 0.088;
-            ID2_VALUE = ID2_ANGLE / 0.088;
-            ID3_VALUE = ID3_ANGLE / 0.088;
-            ID4_VALUE = ID4_ANGLE / 0.088;
+            ID1_VALUE = ID1_ANGLE / constant;
+            ID2_VALUE = ID2_ANGLE / constant;
+            ID3_VALUE = ID3_ANGLE / constant;
+            ID4_VALUE = ID4_ANGLE / constant;
 
             % Add goal position values to the Syncwrite storage
             obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID1_BaseRotation, typecast(int32(ID1_VALUE), 'uint32'), obj.LEN_PRO_GOAL_POSITION);
@@ -778,15 +778,10 @@ classdef openManipX
         end
         
         %% --- Task functions --- %%
-        function pick_up_cube_at_coord(obj, P_X, P_Y, P_Z, PHI)
-            % Modify P_Z height to grip the cube at 3/4 the gripper's
-            % length to avoid gripper the platform as well
-            % Shift the designated height upward by 0.00965
-            P_Z_CALIBRATED = P_Z + 0.00965; 
-            
+        function pick_up_cube_at_coord(obj, P_X, P_Y, P_Z, PHI)            
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
-            [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z + 0.025), PHI);
+            [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = IK_with_PHI(P_X, P_Y, P_Z, PHI);
             
             % Verify angles are not complex i.e. reachable angles
             assert(isreal(SERVO_THETA_1_ABOVE_CUBE), "Fatal error: THETA 1 angle above cube is unreachable");
@@ -812,7 +807,9 @@ classdef openManipX
             close_gripper(obj); 
             
             % Move arm back up
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            % write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            % gonna try to not have this for now so we know what coordinate
+            % we are on
             pause(3);
         end
         
@@ -820,13 +817,13 @@ classdef openManipX
             % Get board location specified 
             [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
             
-            % Modify P_Z to include height of cube
-            P_Z_WITH_CUBE = P_Z + 0.025;
+            P_Z_WITH_CUBE = P_Z + 0.0125;
             
             % Modify P_Z height to grip the cube at 3/4 the gripper's
             % length to avoid gripper the platform as well
             % Shift the designated height upward by 0.00965
-            P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            % P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            P_Z_CALIBRATED = P_Z_WITH_CUBE;
             
             % Calculate IK
             [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
@@ -860,15 +857,10 @@ classdef openManipX
             pause(3);
         end
         
-        function drop_cube_at_coord(obj, P_X, P_Y, P_Z, PHI)
-            % Modify P_Z height to grip the cube at 3/4 the gripper's
-            % length to avoid gripper the platform as well
-            % Shift the designated height upward by 0.00965
-            P_Z_CALIBRATED = P_Z + 0.00965; 
-            
+        function drop_cube_at_coord(obj, P_X, P_Y, P_Z, PHI) 
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
-            [SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP] = IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z + 0.025), PHI);
+            [SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP] = IK_with_PHI(P_X, P_Y, P_Z, PHI);
             
             % Verify angles are not complex i.e. reachable angles
             assert(isreal(SERVO_THETA_1_ABOVE_CUBE), "Fatal error: THETA 1 angle above cube is unreachable");
@@ -890,8 +882,12 @@ classdef openManipX
             % Drop the cube 
             open_gripper(obj);
             
+            pause(3);
+            
             % Move arm back up
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            % write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            % don't want to do this step as we won't know what coords the
+            % arm is at
         end
 
         function drop_cube_at(arm_obj, trajectory_obj, ROW, COLUMN, PHI)
@@ -899,12 +895,13 @@ classdef openManipX
             [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
             
             % Modify P_Z to include height of cube
-            P_Z_WITH_CUBE = P_Z + 0.025;
+            P_Z_WITH_CUBE = P_Z + 0.0125;
             
             % Modify P_Z height to grip the cube at 3/4 the gripper's
             % length to avoid gripper the platform as well
             % Shift the designated height upward by 0.00965
-            P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            % P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            P_Z_CALIBRATED = P_Z_WITH_CUBE;
             
             % Calculate IK
             [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.025), PHI);
@@ -934,21 +931,255 @@ classdef openManipX
             write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
         end
         
-        function rotate_cube_forward_at(obj, ROW, COLUMN, PHI)
-            % - Pick up cube at position
-            % - Move upward 
-            % - Turn by negative PHI 
-            % - Move down and forward
-            ...
+        function move_cube_coord(obj, P_X1, P_Y1, P_Z1, P_X2, P_Y2, P_Z2)
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            %P_Z1 = P_Z1 + 0.00965;
+            %P_Z2 = P_Z2 + 0.00965;
+            
+            % Assuming we are inputting cube coord centres then we have to
+            % shift up by 0.00025 to allow the gripper to not grip the cube
+            % holder
+            P_Z1 = P_Z1 + 0.00025;
+            P_Z2 = P_Z2 + 0.00025;
+            phi = -90;
+            pick_up_cube_at_coord(obj, P_X1, P_Y1, P_Z1, phi);
+            drop_cube_at_coord(obj, P_X2, P_Y2, P_Z2, phi);
         end
         
-        function rotate_cube_backward_at(obj, ROW, COLUMN, PHI)
-            % Check if backward rotation is within range
-            % - Pick up cube at position
+        function rotate_cube_forward_at_coord(obj, P_X, P_Y, P_Z)
+            phi = 0;
+            [SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            phi = -90;
+            [SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_ABOVE_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3);
+            % - Pick up cube at position with phi = 0 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION);
+            pause(3);
+            close_gripper(obj);
+            pause(3);
             % - Move upward 
-            % - Turn by positive PHI 
-            % - Move down and forward
-            ...
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            paise(3);
+            % - Move cube to the exact same position with phi = -90
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION);
+            pause(3);
+            % Drop cube at intended position
+            write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3);
+        end
+        
+        function rotate_cube_backward_at_coord(obj, P_X, P_Y, P_Z)
+            phi = -90;
+            [SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            phi = 0;
+            [SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_ABOVE_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3);
+            % - Pick up cube at position with phi = 0 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION);
+            pause(3);
+            close_gripper(obj);
+            pause(3);
+            % - Move upward 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            paise(3);
+            % - Move cube to the exact same position with phi = -90
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION);
+            pause(3);
+            % Drop cube at intended position
+            write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3);
+        end
+        
+        function rotate_cube_forward_at(obj, ROW, COLUMN)
+            [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
+            
+            P_Z_WITH_CUBE = P_Z + 0.0125;
+            
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            % P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            P_Z = P_Z_WITH_CUBE;
+            
+            
+            phi = 0;
+            [SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            phi = -90;
+            [SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_ABOVE_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3);
+            % - Pick up cube at position with phi = 0 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION);
+            pause(3);
+            close_gripper(obj);
+            pause(3);
+            % - Move upward 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            paise(3);
+            % - Move cube to the exact same position with phi = -90
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION);
+            pause(3);
+            % Drop cube at intended position
+            write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3); 
+        end
+        
+        function rotate_cube_backward_at(obj, ROW, COLUMN)
+            [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
+            
+            P_Z_WITH_CUBE = P_Z + 0.0125;
+            
+            % Modify P_Z height to grip the cube at 3/4 the gripper's
+            % length to avoid gripper the platform as well
+            % Shift the designated height upward by 0.00965
+            % P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
+            P_Z = P_Z_WITH_CUBE;
+            
+            
+            phi = -90;
+            [SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            phi = 0;
+            [SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
+            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = IK_with_PHI(P_X, P_Y, P_Z, phi);
+            
+            
+            % Verify angles are not complex i.e. reachable angles
+            assert(isreal(SERVO_THETA_1_ABOVE_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_PRE_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_PRE_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_PRE_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_PRE_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_ABOVE_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_ABOVE_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_ABOVE_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_ABOVE_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            assert(isreal(SERVO_THETA_1_POST_ROTATION), "Fatal error: THETA 1 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_2_POST_ROTATION), "Fatal error: THETA 2 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_3_POST_ROTATION), "Fatal error: THETA 3 angle above cube is unreachable");
+            assert(isreal(SERVO_THETA_4_POST_ROTATION), "Fatal error: THETA 4 angle above cube is unreachable");
+            
+            % Move to coordinate directly above cube by 0.025 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3);
+            % - Pick up cube at position with phi = 0 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION);
+            pause(3);
+            close_gripper(obj);
+            pause(3);
+            % - Move upward 
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
+            paise(3);
+            % - Move cube to the exact same position with phi = -90
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION);
+            pause(3);
+            % Drop cube at intended position
+            write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION);
+            pause(3);
+            open_gripper(obj);
+            pause(3); 
         end
     end
 end
