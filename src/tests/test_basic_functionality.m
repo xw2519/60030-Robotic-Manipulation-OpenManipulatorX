@@ -11,7 +11,7 @@ arm = openManipX();
 position_control_mode(arm);
 toggle_torque(arm, 1);
 
-set_all_servo_speed_limits(arm, 1300);
+set_all_servo_speed_limits(arm, 40);
 
 % Test write raw encoder functions
 logger(mfilename, "Test Log: Testing basic functionality")
