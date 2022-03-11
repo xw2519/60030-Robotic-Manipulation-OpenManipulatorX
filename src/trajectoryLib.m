@@ -80,9 +80,11 @@ classdef trajectoryLib
             THETA_3 = -(SERVO_THETA_3 - 180 + 79.38034472);
             THETA_4 = (180-SERVO_THETA_4);
             
+            CONSTANT_OFFSET = atand(0.024/0.128);
+            CONSTANT_OFFSET = 90 - CONSTANT_OFFSET;
             
-            THETA_2 = -1*(THETA_2 - (90 - constant));
-            THETA_3 = THETA_3 + constant;
+            THETA_2 = -1*(THETA_2 - (90 - CONSTANT_OFFSET));
+            THETA_3 = THETA_3 + CONSTANT_OFFSET;
             
             % Feed angles into FK matrices
             T_0_1 = [   cosd(THETA_1)                       -sind(THETA_1)                      0               0;
@@ -124,15 +126,11 @@ classdef trajectoryLib
             P_Z = EE_TM(3,4);
         end
         
-        % function [FK_THETA_1, FK_THETA_2, FK_THETA_3, FK_THETA_4] = IK_with_PHI(P_X, P_Y, P_Z, PHI)
         function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = IK_with_PHI(P_X, P_Y, P_Z, PHI)
-            %% --- Constants
+            % Constants
             A_2 = 0.130;
             A_3 = 0.124;
             A_4 = 0.126;
-
-            constant = atand(0.024/0.128);
-            constant = 90-constant;
 
             SIGN = -1;
 
@@ -143,7 +141,7 @@ classdef trajectoryLib
             R_2 = R_3 - A_4*cosd(PHI);
             Z_2 = Z_3 - A_4*sind(PHI);
 
-            %% --- Calculate angles
+            % Calculate angles
             % Theta 1 
             if ~(P_X<=0) && ~(P_Y<=0)  
                 RAW_THETA_1 = atand(P_Y/P_X);
@@ -157,23 +155,17 @@ classdef trajectoryLib
 
             % Theta 3 
             ARGUMENT = ((R_2^2 + Z_2^2 - (A_2^2 + A_3^2))/(2*A_2*A_3));
-
-            % THETA_3 = atan2d(ARGUMENT_2, ARGUMENT);
-
             RAW_THETA_3 = SIGN*acosd(ARGUMENT);
 
             % Theta 2
-
             COSINE_ARGUMENT_1 = (((A_2 + A_3*cosd(RAW_THETA_3))*Z_2) - ((A_3*sind(RAW_THETA_3))*R_2))/ (R_2^2 + Z_2^2);
-
             SINE_ARGUMENT_1 = (((A_2 + A_3*cosd(RAW_THETA_3))*R_2) + ((A_3*sind(RAW_THETA_3))*Z_2))/ (R_2^2 + Z_2^2);
-
             RAW_THETA_2 = atand(SINE_ARGUMENT_1/COSINE_ARGUMENT_1);
 
             % Theta 4
             RAW_THETA_4 = PHI - RAW_THETA_3 - 90 + RAW_THETA_2;
             
-            %% --- Converting angles into format required by servo
+            % Converting angles into format required by servo
             if(imag(RAW_THETA_1) < 10^-5 && imag(RAW_THETA_2) < 10^-5 && imag(RAW_THETA_3) < 10^-5 && imag(RAW_THETA_4) < 10^-5)
                 SERVO_THETA_1 = real((180-RAW_THETA_1)+1.41);
                 SERVO_THETA_2 = real((180+(RAW_THETA_2-10.61965528)));
@@ -183,15 +175,8 @@ classdef trajectoryLib
                 assert("Unreachable");
             end
 
-            %% --- Converting raw angles into format required by FK
-            %FK_THETA_1 = RAW_THETA_1;
-            %FK_THETA_2 = -1*(RAW_THETA_2 - (90 - constant));
-            %FK_THETA_3 = RAW_THETA_3 + constant;
-            %FK_THETA_4 = RAW_THETA_4;
-            
         end
         
-        % COORD_ARRAY = [X, Y, Z, PHI]
         function ANGLE_ARRAY = IK_array_with_PHI(COORD_ARRAY)
             ANGLE_ARRAY = [];
             
@@ -199,9 +184,6 @@ classdef trajectoryLib
             A_2 = 0.130;
             A_3 = 0.124;
             A_4 = 0.126;
-
-            constant = atand(0.024/0.128);
-            constant = 90-constant;
 
             SIGN = -1;
 
@@ -258,7 +240,6 @@ classdef trajectoryLib
                     assert("Unreachable");
                 end
 
-                
                 % Store into array
                 ANGLE_ARRAY = [ANGLE_ARRAY; [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4]];
             end

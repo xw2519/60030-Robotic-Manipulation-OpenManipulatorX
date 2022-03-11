@@ -54,6 +54,10 @@ classdef openManipX
         LEN_PRO_PRESENT_POSITION = 4
         LIB_NAME
         PORT_NUM
+        
+        % Gripper calibrate values 
+        GRIPPER_CLOSE = 3467.05
+        GRIPPER_OPEN = 4162.86
     end
     
     % properties
@@ -68,7 +72,7 @@ classdef openManipX
     methods
         %% --- Class constructor and deconstructor --- %%
         function obj = openManipX()
-            logger(mfilename, "Log: Activating robotic arm")
+            logger(mfilename, "Activating robotic arm")
             
             % Load object library
             obj.LIB_NAME = '';
@@ -139,143 +143,22 @@ classdef openManipX
             end
             
             % Move robotic arm initial starting position
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 15, obj.ADDR_PRO_GOAL_POSITION, 2382.0);
-            pause(0.5)
             
-            % write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 11, obj.ADDR_PRO_GOAL_POSITION, 2045);
-            % pause(0.5)
-            % write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 14, obj.ADDR_PRO_GOAL_POSITION, 2482);
-            % pause(0.5)
-            % write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 13, obj.ADDR_PRO_GOAL_POSITION, 3015);
-            % pause(0.5)
-            % write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 12, obj.ADDR_PRO_GOAL_POSITION, 715);
-            % pause(3)
-            
-            % if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-            %     printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            % elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-            %     printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            % end
-            
-            logger(mfilename, "Log: Robotic arm activated and ready for operations")
+            logger(mfilename, "Robotic arm activated and ready for operations")
         end
         
         function delete(obj)
-            logger(mfilename, "Log: Deactivating robotic arm")
+            logger(mfilename, "Deactivating robotic arm")
             
             % Move to resting position
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 15, obj.ADDR_PRO_GOAL_POSITION, 1943.18);
-            pause(0.5)
+            %obj.write_angles
+            %obj.write_angles
+            %obj.write_angles
+            %obj.write_angles
             
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 12, obj.ADDR_PRO_GOAL_POSITION, 2048);
-            pause(0.5)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 13, obj.ADDR_PRO_GOAL_POSITION, 2000);
-            pause(0.5)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 11, obj.ADDR_PRO_GOAL_POSITION, 2048);
-            pause(0.5)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 14, obj.ADDR_PRO_GOAL_POSITION, 2482);
-            pause(0.5)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 13, obj.ADDR_PRO_GOAL_POSITION, 3015);
-            pause(0.5)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 12, obj.ADDR_PRO_GOAL_POSITION, 715);
-            pause(2)
-            
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            end
-            
-
             % Disable Dynamixel Torque
-            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 11, obj.ADDR_PRO_TORQUE_ENABLE, obj.TORQUE_DISABLE);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d has been successfully disconnected \n', 11);
-            end
-
-            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 12, obj.ADDR_PRO_TORQUE_ENABLE, obj.TORQUE_DISABLE);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d has been successfully disconnected \n', 12);
-            end
+            toggle_torque(obj, obj.TORQUE_DISABLE)
             
-            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 13, obj.ADDR_PRO_TORQUE_ENABLE, obj.TORQUE_DISABLE);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d has been successfully disconnected \n', 13);
-            end
-            
-            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, 14, obj.ADDR_PRO_TORQUE_ENABLE, obj.TORQUE_DISABLE);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d has been successfully disconnected \n', 14);
-            end
-            
-            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_TORQUE_ENABLE, obj.TORQUE_DISABLE);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d has been successfully disconnected \n', 15);
-            end
-            
-            pause(2)
-
             % Close port
             closePort(obj.PORT_NUM);
             fprintf('Port Closed \n');
@@ -286,12 +169,12 @@ classdef openManipX
             close all;
             clear;
             
-            logger(mfilename, "Log: Robotic arm deactivated")
+            logger(mfilename, "Robotic arm successfully deactivated")
         end
         
         %% --- Servo modes --- %%
         function position_control_mode(obj)    
-            logger(mfilename, "Log: Setting Position Control mode") 
+            logger(mfilename, "Setting Position Control mode") 
             
             % Put actuators into Position Control Mode
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_OPERATING_MODE, 3);            
@@ -300,314 +183,252 @@ classdef openManipX
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_OPERATING_MODE, 3);           
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_OPERATING_MODE, 4);
             
-            logger(mfilename, "Log: Position Control mode activated")
+            logger(mfilename, "Position Control mode activated")
         end
                 
         function toggle_torque(obj, torque_toggle)
-            logger(mfilename, "Log: Toggling Torque Mode")
+            logger(mfilename, "Toggling Torque Mode")
             
            % Enable/Disable Dynamixel Torque
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_TORQUE_ENABLE, torque_toggle);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID1_BaseRotation);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID1_BaseRotation);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d has been successfully set to torque mode \n', obj.DXL_ID1_BaseRotation);
+                fprintf('[Log]: Dynamixel #%d has been successfully toggled \n', obj.DXL_ID1_BaseRotation);
             end
             
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_TORQUE_ENABLE, torque_toggle);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID2_Shoulder);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID2_Shoulder);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d has been successfully set to torque mode \n', obj.DXL_ID2_Shoulder);
+                fprintf('[Log]: Dynamixel #%d has been successfully toggled \n', obj.DXL_ID2_Shoulder);
             end
             
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_TORQUE_ENABLE, torque_toggle);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID3_Elbow);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID3_Elbow);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d has been successfully set to torque mode \n', obj.DXL_ID3_Elbow);
+                fprintf('[Log]: Dynamixel #%d has been successfully toggled \n', obj.DXL_ID3_Elbow);
             end
             
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_TORQUE_ENABLE, torque_toggle);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID4_Wrist);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID4_Wrist);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d has been successfully set to torque mode \n', obj.DXL_ID4_Wrist);
+                fprintf('[Log]: Dynamixel #%d has been successfully toggled \n', obj.DXL_ID4_Wrist);
             end
             
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_TORQUE_ENABLE, torque_toggle);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID5_Gripper);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d disconnection failed \n', obj.DXL_ID5_Gripper);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d has been successfully set to torque mode \n', obj.DXL_ID5_Gripper);
+                fprintf('[Log]: Dynamixel #%d has been successfully toggled \n', obj.DXL_ID5_Gripper);
             end
             
-            logger(mfilename, "Log: Torque Mode toggled successfully")
+            logger(mfilename, "Torque Mode successfully toggled")
         end
         
         %% --- Servo settings --- %%
         function set_servo_speed_limit(obj, ID, DXL_VELOCITY)
-            logger(mfilename, "Log: Setting servo speed limit") 
+            logger(mfilename, "Setting servo speed limit") 
             
             write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, ID, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d speed could not be limited \n', ID);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Log]: Dynamixel #%d speed could not be limited \n', ID);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', ID);
+                fprintf('[Log]: Dynamixel #%d speed has been successfully limited \n', ID);
             end
             
-            logger(mfilename, "Log: Servo speeds limited") 
+            logger(mfilename, "Servo speeds limited") 
         end
         
         function set_all_servo_speed_limits(obj, DXL_VELOCITY)
-            logger(mfilename, "Log: Servo speeds limited") 
+            logger(mfilename, "Servo speeds limited") 
             
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID1_BaseRotation);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID2_Shoulder);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID3_Elbow);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID4_Wrist);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_VELOCITY, DXL_VELOCITY); 
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID5_Gripper);
-            end
-            
-            logger(mfilename, "Log: Servo speeds limited") 
+            set_servo_speed_limit(obj, obj.DXL_ID1_BaseRotation, DXL_VELOCITY);
+            set_servo_speed_limit(obj, obj.DXL_ID2_Shoulder, DXL_VELOCITY);
+            set_servo_speed_limit(obj, obj.DXL_ID3_Elbow, DXL_VELOCITY);
+            set_servo_speed_limit(obj, obj.DXL_ID4_Wrist, DXL_VELOCITY);
+            set_servo_speed_limit(obj, obj.DXL_ID5_Gripper, DXL_VELOCITY);
+      
+            logger(mfilename, "Servo speeds limited") 
         end
         
         function set_servo_acceleration(obj, ID, DXL_ACCELERATION)
             % Assuming Time-based Profile
             % Range: 0 ~ 32737 where '0' represents an infinite acceleration time('0 [msec]').
             % Profile Acceleration(108, Acceleration time) will not exceed 50% of Profile Velocity (112, the time span to reach the velocity of the Profile) value.
-            logger(mfilename, "Log: Setting servo acceleration limit") 
+            logger(mfilename, "Setting servo acceleration limit") 
             
             write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, ID, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d acceleration limit failed to be set \n', ID);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d acceleration limit failed to be set \n', ID);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', ID);
+                fprintf('[Log]: Dynamixel #%d acceleration limit has been successfully limited \n', ID);
             end
             
-            logger(mfilename, "Log: Servo acceleration limit set")
+            logger(mfilename, "Servo acceleration limit set")
         end
         
         function set_all_servo_acceleration_limits(obj, DXL_ACCELERATION)
-            logger(mfilename, "Log: Setting servo acceleration limit") 
+            logger(mfilename, "Setting servo acceleration limit") 
             
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID1_BaseRotation);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID2_Shoulder);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID3_Elbow);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION);
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID4_Wrist);
-            end
-            
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_ACCELERATION, DXL_ACCELERATION); 
-            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
-            else
-                fprintf('Log: Dynamixel #%d speed has been successfully limited \n', obj.DXL_ID5_Gripper);
-            end
-            
-            logger(mfilename, "Log: Servo acceleration limit set") 
+            set_servo_acceleration(obj, obj.DXL_ID1_BaseRotation, DXL_ACCELERATION);
+            set_servo_acceleration(obj, obj.DXL_ID2_Shoulder, DXL_ACCELERATION);
+            set_servo_acceleration(obj, obj.DXL_ID3_Elbow, DXL_ACCELERATION);
+            set_servo_acceleration(obj, obj.DXL_ID4_Wrist, DXL_ACCELERATION);
+            set_servo_acceleration(obj, obj.DXL_ID5_Gripper, DXL_ACCELERATION);
+           
+            logger(mfilename, "Servo acceleration limit set") 
         end
         
         function set_all_servo_range_motion(obj)
-           logger(mfilename, "Log: Servo range motion limiting initiated") 
+           logger(mfilename, "Servo range motion limiting initiated") 
             
            % Limiting max range
            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(1)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(2)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_MAX_POS, obj.MAX_POS(2)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID2_Shoulder);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID2_Shoulder);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(3)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_MAX_POS, obj.MAX_POS(3)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID3_Elbow);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID3_Elbow);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(4)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_MAX_POS, obj.MAX_POS(4)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID4_Wrist);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID4_Wrist);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MAX_POS, obj.MAX_POS(5)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_MAX_POS, obj.MAX_POS(5)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID5_Gripper);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID5_Gripper);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
 
            % Limiting min range
            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(1)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(2)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_MIN_POS, obj.MIN_POS(2)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID2_Shoulder);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID2_Shoulder);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(3)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_MIN_POS, obj.MIN_POS(3)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID3_Elbow);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID3_Elbow);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(4)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_MIN_POS, obj.MIN_POS(4)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID4_Wrist);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID4_Wrist);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_MIN_POS, obj.MIN_POS(5)); 
+           write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_MIN_POS, obj.MIN_POS(5)); 
            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID5_Gripper);
                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-               fprintf('Log: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID1_BaseRotation);
+               fprintf('[Error]: Dynamixel #%d motion failed to be limited \n', obj.DXL_ID5_Gripper);
                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
            end
            
-           logger(mfilename, "Log: Servo range motion limiting completed") 
+           logger(mfilename, "Servo range motion limiting completed") 
         end
     
         %% --- Write and read functions --- %%
         function write_raw_encoder(obj, SERVO_ID, ENCODER_VAL)
-            msg = append('Log: Writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
+            msg = append('Writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
             logger(mfilename, msg)
 
             write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, SERVO_ID, obj.ADDR_PRO_GOAL_POSITION, ENCODER_VAL);
 
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be written \n', SERVO_ID);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be written \n', SERVO_ID);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
-            msg = append('Log: Completed writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
+            msg = append('Completed writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
             logger(mfilename, msg)
         end
         
         function write_angles(obj, SERVO_ID, ANGLE)
-            msg = append('Log: Writing angle: ', string(ANGLE), ' to servo: ', string(SERVO_ID));
+            msg = append('Writing angle: ', string(ANGLE), ' to servo: ', string(SERVO_ID));
             logger(mfilename, msg)
             
             % Convert degree to raw encoder value
@@ -617,18 +438,20 @@ classdef openManipX
             write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, SERVO_ID, obj.ADDR_PRO_GOAL_POSITION, ENCODER_VAL);
 
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d angle cannot be written \n', SERVO_ID);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d angle cannot be written \n', SERVO_ID);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
-            msg = append('Log: Completed writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
+            msg = append('[Log]: Completed writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
             logger(mfilename, msg)
         end
         
         function write_angles_to_all_servos(obj, ID1_ANGLE, ID2_ANGLE, ID3_ANGLE, ID4_ANGLE)
-            %msg = append('Writing encoder value: ', string(ENCODER_VAL), ' to servo: ', string(SERVO_ID));
-            %logger(mfilename, msg) % Log
+            msg = append('Writing angles: ', string(ID1_ANGLE), ' ', string(ID2_ANGLE), ' ', string(ID3_ANGLE), ' ', string(ID4_ANGLE));
+            logger(mfilename, msg) % [Log]
             
             % Convert to raw encoder values
             ID1_VALUE = ID1_ANGLE / 0.088;
@@ -639,96 +462,130 @@ classdef openManipX
             % Add goal position values to the Syncwrite storage
             obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID1_BaseRotation, typecast(int32(ID1_VALUE), 'uint32'), 4);
             if obj.DXL_ADDPARAM_RESULT ~= true
-                fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID1_BaseRotation);
+                fprintf('[Log]: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID1_BaseRotation);
                 return;
             end
             
             obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID2_Shoulder, typecast(int32(ID2_VALUE), 'uint32'), 4);
             if obj.DXL_ADDPARAM_RESULT ~= true
-                fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID2_Shoulder);
+                fprintf('[Log]: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID2_Shoulder);
                 return;
             end
             
             obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID3_Elbow, typecast(int32(ID3_VALUE), 'uint32'), 4);
             if obj.DXL_ADDPARAM_RESULT ~= true
-                fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID3_Elbow);
+                fprintf('[Log]: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID3_Elbow);
                 return;
             end
             
             obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID4_Wrist, typecast(int32(ID4_VALUE), 'uint32'), 4);
             if obj.DXL_ADDPARAM_RESULT ~= true
-                fprintf('Log: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID4_Wrist);
+                fprintf('[Log]: [ID:%03d] groupSyncWrite addparam failed', obj.DXL_ID4_Wrist);
                 return;
             end
             
-            logger(mfilename, "Log: All angles converted and stored. Attempting to write simultaneously to all servos")
+            logger(mfilename, "All angles converted and stored. Attempting to write simultaneously to all servos")
             
             % Write in sync to all servo
             groupSyncWriteTxPacket(obj.GROUPWRITE_NUM); 
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Failed to write simultaneously to all servos \n');
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
             % Clear syncwrite parameter storage
             groupSyncWriteClearParam(obj.GROUPWRITE_NUM);
                 
-            logger(mfilename, "Log: Successfully written to all servos")
+            logger(mfilename, "Successfully written to all servos")
         end
         
         function [ID11_Value, ID12_Value, ID13_Value, ID14_Value, ID15_Value] = read_all_servo_raw_encoder(obj)
-            logger(mfilename, "Log: Reading all servo raw encoder values")
+            logger(mfilename, "Reading all servo raw encoder values")
             
             ID11_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID1_BaseRotation);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID1_BaseRotation);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
             ID12_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID2_Shoulder);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID2_Shoulder);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
             ID13_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID3_Elbow);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID3_Elbow);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
             ID14_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID4_Wrist);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID4_Wrist);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
             ID15_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_PRESENT_POSITION);
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID5_Gripper);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d raw encoder cannot be read \n', obj.DXL_ID5_Gripper);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
-            logger(mfilename, "Log: Successfully read all servo raw encoder values")
+            logger(mfilename, "Successfully read all servo raw encoder values")
         end
         
         function [ID11_Angle, ID12_Angle, ID13_Angle, ID14_Angle, ID15_Angle] = read_all_servo_angles(obj)
-            logger(mfilename, "Log: Reading all servo raw encoder values")
+            logger(mfilename, "Reading all servo raw encoder values")
             
             ID11_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION);
-            ID12_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION);
-            ID13_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION);
-            ID14_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION);
-            ID15_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_PRESENT_POSITION);
-            
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
-                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.DXL_ID1_BaseRotation));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
-                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.DXL_ID1_BaseRotation));
+            end
+            
+            ID12_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.DXL_ID2_Shoulder));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.DXL_ID2_Shoulder));
+            end
+            
+            ID13_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.DXL_ID3_Elbow));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.DXL_ID3_Elbow));
+            end
+            
+            ID14_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.DXL_ID4_Wrist));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.DXL_ID4_Wrist));
+            end
+            
+            ID15_Value = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_PRESENT_POSITION);
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.DXL_ID5_Gripper));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.DXL_ID5_Gripper));
             end
             
             ID11_Angle = (0.088 * typecast(single(ID11_Value), 'single'));
@@ -740,29 +597,35 @@ classdef openManipX
 
          %% --- Gripper functions --- %%
         function open_gripper(obj)
-            logger(mfilename, "Log: Opening gripper")
+            logger(mfilename, "Opening gripper")
             % 1943.18 -> R02
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, 4162.86);
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, obj.GRIPPER_OPEN);
             pause(0.5)
             
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to open \n', obj.DXL_ID5_Gripper);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to open \n', obj.DXL_ID5_Gripper);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
-            logger(mfilename, "Log: Gripper opened") 
+            logger(mfilename, "Gripper opened") 
         end
         
         function close_gripper(obj)
             logger(mfilename, "Closing gripper")
             % 2382.0 -> R02
-            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, 3467.05);
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, obj.GRIPPER_CLOSE);
             pause(0.5)
             
             if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to close \n', obj.DXL_ID5_Gripper);
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to close \n', obj.DXL_ID5_Gripper);
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             

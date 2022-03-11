@@ -94,15 +94,6 @@ else
     return;
 end
 
-%% --- Limit the speed of the robot --- %%
-write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID1_BaseRotation, ADDR_PRO_VELOCITY, DXL_VELOCITY);
-write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID2_Shoulder, ADDR_PRO_VELOCITY, DXL_VELOCITY);
-write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID3_Elbow, ADDR_PRO_VELOCITY, DXL_VELOCITY);
-write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID4_Wrist, ADDR_PRO_VELOCITY, DXL_VELOCITY);
-write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID5_Gripper, ADDR_PRO_VELOCITY, DXL_VELOCITY); 
-
-disp("Log: Servo speeds limited")
-
 %% ---- Switch Servo Torque Off to Allow Manual Tracking---- %%
 % Put actuator into Position Control Mode
 write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID1_BaseRotation, ADDR_PRO_OPERATING_MODE, 3);
