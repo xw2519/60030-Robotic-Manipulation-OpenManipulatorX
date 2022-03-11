@@ -8,9 +8,9 @@
 
 %% -- Constant -- %%
 theta_1 = 0;
-theta_2 = 0;
-theta_3 = 0;
-theta_4 = 0;  
+theta_2 = -40.42;
+theta_3 = 42.57;
+theta_4 = -92.15;  
 
 %% --- Waist TM --- %%
 

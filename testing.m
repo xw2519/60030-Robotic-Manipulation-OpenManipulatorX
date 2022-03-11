@@ -22,9 +22,8 @@ trajectoryLib = trajectoryLib();
 position_control_mode(arm);
 toggle_torque(arm, 1);
 
-set_all_servo_speed_limits(arm, 40);
+set_all_servo_speed_limits(arm, 35);
 
-rotate_cube_backward_at_coord(arm, trajectoryLib, 0.125, 0, 0.0263);
 move_cube_coord(arm, trajectoryLib, 0.125, 0, 0.0263, 0.05, 0.175, 0.0263);
 move_cube_coord(arm, trajectoryLib, 0.15, 0.15, 0.0263, 0.05, 0.175, 0.0513);
 move_cube_coord(arm, trajectoryLib, 0.125, -0.125, 0.0263, 0.05, 0.175, 0.0763);

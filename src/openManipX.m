@@ -27,8 +27,8 @@ classdef openManipX
         PROTOCOL_VERSION            = 2.0;          % See which protocol version is used in the Dynamixel
 
         % Default setting
-        BAUDRATE                    = 115200;
-        DEVICENAME                  = 'COM7';       % Check which port is being used on your controller
+        BAUDRATE                    = 1000000;
+        DEVICENAME                  = 'COM9';       % Check which port is being used on your controller
                                                     % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'      
         TORQUE_ENABLE               = 1;            % Value for enabling the torque
         TORQUE_DISABLE              = 0;            % Value for disabling the torque
@@ -56,8 +56,8 @@ classdef openManipX
         PORT_NUM
         
         % Gripper calibrate values 
-        GRIPPER_CLOSE = 3467.05
-        GRIPPER_OPEN = 4162.86
+        GRIPPER_CLOSE = 2470
+        GRIPPER_OPEN = 2074.43
         
         % Pick up and drop cubes calibration values 
         ABOVE_CUBE_OFFSET = 0.05
@@ -154,10 +154,25 @@ classdef openManipX
             logger(mfilename, "Deactivating robotic arm")
             
             % Move to resting position
-            %obj.write_angles
-            %obj.write_angles
-            %obj.write_angles
-            %obj.write_angles
+            obj.write_angles_to_all_servos(180, 180, 180, 180);
+            pause(2);
+            %check_position_reached(obj, 180, 180, 180, 180);
+            % obj.check_position_reached((180/0.088), (180/0.088), (180/0.088), (180/0.088));
+            
+            obj.write_angles_to_all_servos(180, 130, 216, 198);
+            pause(2);
+            %check_position_reached(obj, 180, 130, 216, 198);
+            % obj.check_position_reached((180/0.088), (130/0.088), (216/0.088), (198/0.088));
+            
+            obj.write_angles_to_all_servos(180, 77.70, 245.04, 219.90);
+            pause(2);
+            %check_position_reached(obj, 180, 77.70, 245.04, 219.90);
+            % obj.check_position_reached((180/0.088), (77.70/0.088), (245.04/0.088), (219.90/0.088));
+            
+            obj.write_angles_to_all_servos(180, 62.93, 265.87, 218.67);
+            pause(2);
+            %check_position_reached(obj, 180, 62.93, 265.87, 218.67);
+            % obj.check_position_reached((180/0.088), (62.93/0.088), (265.87/0.088), (218.67/0.088));
             
             % Disable Dynamixel Torque
             toggle_torque(obj, obj.TORQUE_DISABLE)
@@ -175,6 +190,86 @@ classdef openManipX
             logger(mfilename, "Robotic arm successfully deactivated")
         end
         
+        %% --- Check position 
+        function check_position_reached(obj, goal_pos_1, goal_pos_2, goal_pos_3, goal_pos_4)
+            goal_pos_1 = goal_pos_1/0.088;
+            goal_pos_2 = goal_pos_2/0.088;
+            goal_pos_3 = goal_pos_3/0.088;
+            goal_pos_4 = goal_pos_4/0.088;
+            
+            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID1_BaseRotation);
+            if dxl_addparam_result ~= true
+              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID1_BaseRotation);
+              return;
+            end
+
+            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID2_Shoulder);
+            if dxl_addparam_result ~= true
+              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID2_Shoulder);
+              return;
+            end
+            
+            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID3_Elbow);
+            if dxl_addparam_result ~= true
+              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID3_Elbow);
+              return;
+            end
+            
+            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID4_Wrist);
+            if dxl_addparam_result ~= true
+              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID4_Wrist);
+              return;
+            end
+     
+            % Loop until position is reached 
+            while 1
+                % Check if groupsyncread data of Dynamixel#1 is available
+                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+                if dxl_getdata_result ~= true
+                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID1_BaseRotation);
+                  return;
+                end
+
+                % Check if groupsyncread data of Dynamixel#2 is available
+                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+                if dxl_getdata_result ~= true
+                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID2_Shoulder);
+                  return;
+                end
+                
+                % Check if groupsyncread data of Dynamixel#3 is available
+                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+                if dxl_getdata_result ~= true
+                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID3_Elbow);
+                  return;
+                end
+                
+                % Check if groupsyncread data of Dynamixel#4 is available
+                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+                if dxl_getdata_result ~= true
+                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID4_Wrist);
+                  return;
+                end
+
+                % Get Dynamixel#1 present position value
+                dxl1_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+
+                % Get Dynamixel#2 present position value
+                dxl2_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+                
+                % Get Dynamixel#3 present position value
+                dxl3_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+                
+                % Get Dynamixel#4 present position value
+                dxl4_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
+
+                if ~((abs(goal_pos_1 - typecast(uint32(dxl1_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD) || (abs(goal_pos_2 - typecast(uint32(dxl2_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD) || (abs(goal_pos_3 - typecast(uint32(dxl3_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD || (abs(goal_pos_4 - typecast(uint32(dxl4_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD)))
+                    break;
+                end
+            end
+            
+        end
+        
         %% --- Servo modes --- %%
         function position_control_mode(obj)    
             logger(mfilename, "Setting Position Control mode") 
@@ -184,7 +279,7 @@ classdef openManipX
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_OPERATING_MODE, 3);            
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_OPERATING_MODE, 3);            
             write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_OPERATING_MODE, 3);           
-            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_OPERATING_MODE, 4);
+            write1ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_OPERATING_MODE, 3);
             
             logger(mfilename, "Position Control mode activated")
         end
@@ -757,7 +852,7 @@ classdef openManipX
             % holder
             P_Z1 = P_Z1 + 0.00025;
             P_Z2 = P_Z2 + 0.00025;
-            phi = -90;
+            phi = 0;
             
             pick_up_cube_at_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, phi);
             drop_cube_at_coord(obj, trajectoryLib, P_X2, P_Y2, P_Z2, phi);
