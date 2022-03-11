@@ -47,7 +47,10 @@ classdef trajectoryLib
     end
     
     properties(GetAccess=private)
-        ...
+        THETA_1_CALIBRATION = 1.41
+        THETA_2_CALIBRATION = 0
+        THETA_3_CALIBRATION = 0
+        THETA_4_CALIBRATION = 1.3
     end
     
     %% --- Static Class methods --- %%
@@ -126,7 +129,20 @@ classdef trajectoryLib
             P_Z = EE_TM(3,4);
         end
         
-        function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = IK_with_PHI(P_X, P_Y, P_Z, PHI)
+        %% --- Operation Functions --- %%
+        function draw_line(START_COORDS, END_COORDS)
+            ...
+        end
+
+        function draw_arc(ARC_CENTER, RADIUS, ~, START_COORDS, END_COORDS)
+            ...
+        end
+    end
+    
+    %% --- Non-static Class methods --- %%
+    methods
+        %% --- FK and IK --- %%
+        function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = IK_with_PHI(obj, P_X, P_Y, P_Z, PHI)
             % Constants
             A_2 = 0.130;
             A_3 = 0.124;
@@ -167,19 +183,18 @@ classdef trajectoryLib
             
             % Converting angles into format required by servo
             if(imag(RAW_THETA_1) < 10^-5 && imag(RAW_THETA_2) < 10^-5 && imag(RAW_THETA_3) < 10^-5 && imag(RAW_THETA_4) < 10^-5)
-                SERVO_THETA_1 = real((180-RAW_THETA_1)+1.41);
-                SERVO_THETA_2 = real((180+(RAW_THETA_2-10.61965528)));
-                SERVO_THETA_3 = real((180+(-RAW_THETA_3-79.38034472)));
-                SERVO_THETA_4 = real((180-RAW_THETA_4));
+                SERVO_THETA_1 = real((180 - RAW_THETA_1) + obj.THETA_1_CALIBRATION);
+                SERVO_THETA_2 = real((180 + (RAW_THETA_2 - 10.61965528)) + obj.THETA_2_CALIBRATION);
+                SERVO_THETA_3 = real((180 + (-RAW_THETA_3 - 79.38034472)) + obj.THETA_3_CALIBRATION);
+                SERVO_THETA_4 = real((180 - RAW_THETA_4) + obj.THETA_4_CALIBRATION);    
             else
                 assert("Unreachable");
             end
-
         end
         
-        function ANGLE_ARRAY = IK_array_with_PHI(COORD_ARRAY)
+        function ANGLE_ARRAY = IK_array_with_PHI(obj, COORD_ARRAY)
             ANGLE_ARRAY = [];
-            
+
             % Constants
             A_2 = 0.130;
             A_3 = 0.124;
@@ -232,10 +247,10 @@ classdef trajectoryLib
 
                 % Converting angles into format required by servo
                 if(imag(RAW_THETA_1) < 10^-5 && imag(RAW_THETA_2) < 10^-5 && imag(RAW_THETA_3) < 10^-5 && imag(RAW_THETA_4) < 10^-5)
-                    SERVO_THETA_1 = real((180-RAW_THETA_1)+1.41);
-                    SERVO_THETA_2 = real((180+(RAW_THETA_2-10.61965528)));
-                    SERVO_THETA_3 = real((180+(-RAW_THETA_3-79.38034472)));
-                    SERVO_THETA_4 = real((180-RAW_THETA_4));
+                    SERVO_THETA_1 = real((180 - RAW_THETA_1) + obj.THETA_1_CALIBRATION);
+                    SERVO_THETA_2 = real((180 + (RAW_THETA_2-10.61965528)) + obj.THETA_2_CALIBRATION);
+                    SERVO_THETA_3 = real((180+(-RAW_THETA_3-79.38034472)) + obj.THETA_3_CALIBRATION);
+                    SERVO_THETA_4 = real((180-RAW_THETA_4) + obj.THETA_4_CALIBRATION);
                 else
                     assert("Unreachable");
                 end
@@ -245,18 +260,6 @@ classdef trajectoryLib
             end
         end
         
-        %% --- Operation Functions --- %%
-        function draw_line(START_COORDS, END_COORDS)
-            ...
-        end
-
-        function draw_arc(ARC_CENTER, RADIUS, ~, START_COORDS, END_COORDS)
-            ...
-        end
-    end
-    
-    %% --- Non-static Class methods --- %%
-    methods
         %% --- Acrylic board functions --- %%
         function [P_X, P_Y, P_Z] = get_board_location(obj, ROW, COLUMN)
             P_X = obj.ACRYLIC_BOARD_X_COORDS(ROW, COLUMN);

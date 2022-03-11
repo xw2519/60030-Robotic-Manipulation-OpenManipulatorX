@@ -58,6 +58,9 @@ classdef openManipX
         % Gripper calibrate values 
         GRIPPER_CLOSE = 3467.05
         GRIPPER_OPEN = 4162.86
+        
+        % Pick up and drop cubes calibration values 
+        ABOVE_CUBE_OFFSET = 0.05
     end
     
     % properties
@@ -635,28 +638,23 @@ classdef openManipX
         %% --- Task functions --- %%
         function pick_up_cube_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, PHI)            
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + 0.05), PHI);
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), PHI);
             [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, PHI);
             
-            % Move to coordinate directly above cube by 0.025 m
+            % Move to coordinate directly above cube by 0.05 m
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(3);
             open_gripper(obj);
             
-            pause(3);
+            pause(1);
             
-            % Move arm down 
+            % Move arm down and grip the cube 
             write_angles_to_all_servos(obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
-            % Grip the cube 
             close_gripper(obj); 
             
+            pause(2);
+            
             % Move arm back up
-            % write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            % gonna try to not have this for now so we know what coordinate
-            % we are on
-            pause(3);
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(3);
         end
         
         function pick_up_cube_at(obj, trajectoryLib, trajectory_obj, ROW, COLUMN, PHI)
@@ -697,23 +695,24 @@ classdef openManipX
         
         function drop_cube_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, PHI) 
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + 0.05), PHI);
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), PHI);
             [SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, PHI);
             
-            % Move to coordinate directly above cube by 0.025 m
+            % Move to coordinate directly above cube by 0.05 m
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
             pause(2);
             
             % Move arm down 
             write_angles_to_all_servos(obj, SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP);
-            pause(2);
+            pause(1);
             
             % Drop the cube 
             open_gripper(obj);
             
-            pause(3);
+            pause(2);
+            
+            % Move arm back up
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(1);
         end
 
         function drop_cube_at(obj, trajectoryLib, trajectory_obj, ROW, COLUMN, PHI)
@@ -759,6 +758,7 @@ classdef openManipX
             P_Z1 = P_Z1 + 0.00025;
             P_Z2 = P_Z2 + 0.00025;
             phi = -90;
+            
             pick_up_cube_at_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, phi);
             drop_cube_at_coord(obj, trajectoryLib, P_X2, P_Y2, P_Z2, phi);
         end
