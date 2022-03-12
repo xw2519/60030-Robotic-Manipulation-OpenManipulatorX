@@ -23,9 +23,8 @@ position_control_mode(arm);
 toggle_torque(arm, 1);
 
 set_all_servo_speed_limits(arm, 35);
+set_all_servo_acceleration_limits(arm, 5);
 
-move_cube_coord(arm, trajectoryLib, 0.125, 0, 0.0263, 0.05, 0.175, 0.0263);
-move_cube_coord(arm, trajectoryLib, 0.15, 0.15, 0.0263, 0.05, 0.175, 0.0513);
-move_cube_coord(arm, trajectoryLib, 0.125, -0.125, 0.0263, 0.05, 0.175, 0.0763);
+write_angles_to_all_servos(arm, 135, 218, 238, 86); 
 
-delete(arm);
+

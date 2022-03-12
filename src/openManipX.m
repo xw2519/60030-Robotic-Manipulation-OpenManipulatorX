@@ -34,7 +34,7 @@ classdef openManipX
         TORQUE_DISABLE              = 0;            % Value for disabling the torque
         DXL_MINIMUM_POSITION_VALUE  = -150000;      % Dynamixel will rotate between this value
         DXL_MAXIMUM_POSITION_VALUE  = 150000;       % and this value (note that the Dynamixel would not move when the position value is out of movable range. Check e-manual about the range of the Dynamixel you use.)
-        DXL_MOVING_STATUS_THRESHOLD = 20;           % Dynamixel moving status threshold
+        DXL_MOVING_STATUS_THRESHOLD = 100;           % Dynamixel moving status threshold
         DXL_VELOCITY                = 20000;
 
         COMM_SUCCESS                = 0;            % Communication Success result value
@@ -155,22 +155,18 @@ classdef openManipX
             
             % Move to resting position
             obj.write_angles_to_all_servos(180, 180, 180, 180);
-            pause(2);
             %check_position_reached(obj, 180, 180, 180, 180);
             % obj.check_position_reached((180/0.088), (180/0.088), (180/0.088), (180/0.088));
             
             obj.write_angles_to_all_servos(180, 130, 216, 198);
-            pause(2);
             %check_position_reached(obj, 180, 130, 216, 198);
             % obj.check_position_reached((180/0.088), (130/0.088), (216/0.088), (198/0.088));
             
             obj.write_angles_to_all_servos(180, 77.70, 245.04, 219.90);
-            pause(2);
             %check_position_reached(obj, 180, 77.70, 245.04, 219.90);
             % obj.check_position_reached((180/0.088), (77.70/0.088), (245.04/0.088), (219.90/0.088));
             
             obj.write_angles_to_all_servos(180, 62.93, 265.87, 218.67);
-            pause(2);
             %check_position_reached(obj, 180, 62.93, 265.87, 218.67);
             % obj.check_position_reached((180/0.088), (62.93/0.088), (265.87/0.088), (218.67/0.088));
             
@@ -192,78 +188,47 @@ classdef openManipX
         
         %% --- Check position 
         function check_position_reached(obj, goal_pos_1, goal_pos_2, goal_pos_3, goal_pos_4)
-            goal_pos_1 = goal_pos_1/0.088;
-            goal_pos_2 = goal_pos_2/0.088;
-            goal_pos_3 = goal_pos_3/0.088;
-            goal_pos_4 = goal_pos_4/0.088;
+            goal_pos_1 = typecast(uint32(goal_pos_1/0.088), 'int32');
+            goal_pos_2 = typecast(uint32(goal_pos_2/0.088), 'int32'); 
+            goal_pos_3 = typecast(uint32(goal_pos_3/0.088), 'int32'); 
+            goal_pos_4 = typecast(uint32(goal_pos_4/0.088), 'int32'); 
             
-            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID1_BaseRotation);
-            if dxl_addparam_result ~= true
-              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID1_BaseRotation);
-              return;
-            end
-
-            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID2_Shoulder);
-            if dxl_addparam_result ~= true
-              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID2_Shoulder);
-              return;
-            end
+            logger(mfilename, "Checking if servo positions reached")
             
-            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID3_Elbow);
-            if dxl_addparam_result ~= true
-              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID3_Elbow);
-              return;
-            end
-            
-            dxl_addparam_result = groupSyncReadAddParam(obj.GROUPREAD_NUM, obj.DXL_ID4_Wrist);
-            if dxl_addparam_result ~= true
-              fprintf('[ID:%03d] groupSyncRead addparam failed', obj.DXL_ID4_Wrist);
-              return;
-            end
-     
             % Loop until position is reached 
             while 1
-                % Check if groupsyncread data of Dynamixel#1 is available
-                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-                if dxl_getdata_result ~= true
-                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID1_BaseRotation);
-                  return;
+                dxl_1_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
                 end
 
-                % Check if groupsyncread data of Dynamixel#2 is available
-                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-                if dxl_getdata_result ~= true
-                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID2_Shoulder);
-                  return;
+                dxl_2_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
                 end
                 
-                % Check if groupsyncread data of Dynamixel#3 is available
-                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-                if dxl_getdata_result ~= true
-                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID3_Elbow);
-                  return;
+                dxl_3_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
                 end
                 
-                % Check if groupsyncread data of Dynamixel#4 is available
-                dxl_getdata_result = groupSyncReadIsAvailable(obj.GROUPREAD_NUM, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-                if dxl_getdata_result ~= true
-                  fprintf('[ID:%03d] groupSyncRead getdata failed', obj.DXL_ID4_Wrist);
-                  return;
+                dxl_4_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
                 end
 
-                % Get Dynamixel#1 present position value
-                dxl1_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-
-                % Get Dynamixel#2 present position value
-                dxl2_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID2_Shoulder, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-                
-                % Get Dynamixel#3 present position value
-                dxl3_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID3_Elbow, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-                
-                % Get Dynamixel#4 present position value
-                dxl4_present_position = groupSyncReadGetData(obj.GROUPREAD_NUM, obj.DXL_ID4_Wrist, obj.ADDR_PRO_PRESENT_POSITION, obj.LEN_PRO_PRESENT_POSITION);
-
-                if ~((abs(goal_pos_1 - typecast(uint32(dxl1_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD) || (abs(goal_pos_2 - typecast(uint32(dxl2_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD) || (abs(goal_pos_3 - typecast(uint32(dxl3_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD || (abs(goal_pos_4 - typecast(uint32(dxl4_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD)))
+                if ~((abs(goal_pos_1 - typecast(uint32(dxl_1_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD) || (abs(goal_pos_2 - typecast(uint32(dxl_2_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD) || (abs(goal_pos_3 - typecast(uint32(dxl_3_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD || (abs(goal_pos_4 - typecast(uint32(dxl_4_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD)))
+                    logger(mfilename, "Goal position reached")
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', goal_pos_1, goal_pos_2, goal_pos_3, goal_pos_4);
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', dxl_1_present_position, dxl_2_present_position, dxl_3_present_position, dxl_4_present_position);
                     break;
                 end
             end
@@ -591,6 +556,9 @@ classdef openManipX
                 printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
+            % Check if reached
+            check_position_reached(obj, ID1_ANGLE, ID2_ANGLE, ID3_ANGLE, ID4_ANGLE);
+            
             % Clear syncwrite parameter storage
             groupSyncWriteClearParam(obj.GROUPWRITE_NUM);
                 
@@ -709,6 +677,23 @@ classdef openManipX
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
+            % Loop until position is reached 
+            while 1
+                dxl_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                end
+                
+                if ~((abs(obj.GRIPPER_OPEN - typecast(uint32(dxl_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD))
+                    logger(mfilename, "Goal position reached")
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', obj.GRIPPER_OPEN);
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', dxl_present_position);
+                    break;
+                end
+            end
+            
             logger(mfilename, "Gripper opened") 
         end
         
@@ -727,87 +712,118 @@ classdef openManipX
                 printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
             end
             
+            % Loop until position is reached 
+            while 1
+                dxl_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                end
+                
+                if ~((abs(obj.GRIPPER_CLOSE - typecast(uint32(dxl_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD))
+                    logger(mfilename, "Goal position reached")
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', obj.GRIPPER_CLOSE);
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', dxl_present_position);
+                    break;
+                end
+            end
+            
             logger(mfilename, "Gripper closed") 
         end
         
         %% --- Task functions --- %%
         function pick_up_cube_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, PHI)            
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), PHI);
-            [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, PHI);
-            
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), 0);
+
             % Move to coordinate directly above cube by 0.05 m
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
             open_gripper(obj);
             
-            pause(1);
+            Z_COORDS = linspace((P_Z + obj.ABOVE_CUBE_OFFSET), P_Z, 10);
+            PHI_TRANSITION = 0;
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+                PHI_TRANSITION = PHI_TRANSITION -9;
+            end
             
             % Move arm down and grip the cube 
-            write_angles_to_all_servos(obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
             close_gripper(obj); 
-            
-            pause(2);
-            
+
             % Move arm back up
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            Z_COORDS = linspace(P_Z, (P_Z + obj.ABOVE_CUBE_OFFSET), 10);
+            PHI_TRANSITION = -90;
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+                PHI_TRANSITION = PHI_TRANSITION + 9;
+            end
         end
         
         function pick_up_cube_at(obj, trajectoryLib, trajectory_obj, ROW, COLUMN, PHI)
             % Get board location specified 
             [P_X, P_Y, P_Z] = get_board_location(trajectory_obj, ROW, COLUMN);
             
-            P_Z_WITH_CUBE = P_Z + 0.0125;
+            P_Z_WITH_CENTER_CUBE = P_Z + 0.0125;
             
             % Modify P_Z height to grip the cube at 3/4 the gripper's
             % length to avoid gripper the platform as well
-            % Shift the designated height upward by 0.00965
-            % P_Z_CALIBRATED = P_Z_WITH_CUBE + 0.00965; 
-            P_Z_CALIBRATED = P_Z_WITH_CUBE;
+            % Shift the designated height upward by 0.00865
+            if PHI == 0
+                P_Z_CALIBRATED = P_Z_WITH_CENTER_CUBE + 0.00375;
+            elseif PHI == -90
+                P_Z_CALIBRATED = P_Z_WITH_CENTER_CUBE + 0.00865;
+            end 
             
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z_CALIBRATED + 0.05), PHI);
             [SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z_CALIBRATED, PHI);
             
-            % Move to coordinate directly above cube by 0.025 m
-            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(1);
+            % Process
             open_gripper(obj);
-            
-            pause(3);
             
             % Move arm down 
             write_angles_to_all_servos(obj, SERVO_THETA_1_GRIP, SERVO_THETA_2_GRIP, SERVO_THETA_3_GRIP, SERVO_THETA_4_GRIP);
             
             % Grip the cube 
             close_gripper(obj);
-            
-            % Move arm back up
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(3);
-            write_angles_to_all_servos(arm_obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(2);
         end
         
         function drop_cube_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, PHI) 
             % Calculate IK
-            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), PHI);
-            [SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, PHI);
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), 0);
             
             % Move to coordinate directly above cube by 0.05 m
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
-            pause(2);
             
-            % Move arm down 
-            write_angles_to_all_servos(obj, SERVO_THETA_1_DROP, SERVO_THETA_2_DROP, SERVO_THETA_3_DROP, SERVO_THETA_4_DROP);
-            pause(1);
+            Z_COORDS = linspace((P_Z + obj.ABOVE_CUBE_OFFSET), P_Z, 10);
+            PHI_TRANSITION = -9;
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+                PHI_TRANSITION = PHI_TRANSITION -9;
+            end
             
             % Drop the cube 
             open_gripper(obj);
-            
-            pause(2);
-            
+
             % Move arm back up
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            Z_COORDS = linspace(P_Z, (P_Z + obj.ABOVE_CUBE_OFFSET), 10);
+            PHI_TRANSITION = -90;
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+                PHI_TRANSITION = PHI_TRANSITION + 9;
+            end
         end
 
         function drop_cube_at(obj, trajectoryLib, trajectory_obj, ROW, COLUMN, PHI)
@@ -841,21 +857,49 @@ classdef openManipX
         end
         
         function move_cube_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, P_X2, P_Y2, P_Z2)
-            % Modify P_Z height to grip the cube at 3/4 the gripper's
-            % length to avoid gripper the platform as well
-            % Shift the designated height upward by 0.00965
-            %P_Z1 = P_Z1 + 0.00965;
-            %P_Z2 = P_Z2 + 0.00965;
+            PHI = -90;
+            PICKING_HEIGHT = 0.03;
             
-            % Assuming we are inputting cube coord centres then we have to
-            % shift up by 0.00025 to allow the gripper to not grip the cube
-            % holder
-            P_Z1 = P_Z1 + 0.00025;
-            P_Z2 = P_Z2 + 0.00025;
-            phi = 0;
+            % Linear interpolation:
+            % - Arm will move around at 0.06 height and PHI = 0
+            % Step 1: Get current location and move to 0.1 height
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = read_all_servo_angles(obj);
+            [P_X, P_Y, P_Z] = trajectoryLib.FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
             
-            pick_up_cube_at_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, phi);
-            drop_cube_at_coord(obj, trajectoryLib, P_X2, P_Y2, P_Z2, phi);
+            P_Z_MOVING_HEIGHT = 0.15;
+            [SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z_MOVING_HEIGHT, 0);
+            write_angles_to_all_servos(obj, SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE);
+            
+            % Step 2: Linear interpolate to coordinate directly 0.1 m above
+            X_COORDS = linspace(P_X, P_X1, 5);
+            Y_COORDS = linspace(P_Y, P_Y1, 5);
+            
+            for i = 1:5
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(X_COORDS(1), Y_COORDS(2), P_Z_MOVING_HEIGHT, 0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            end
+            
+            % Step 3: Pick up cube            
+            pick_up_cube_at_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, PHI);
+            
+            % Step 4: Go back up to 0.1m traversing height
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = read_all_servo_angles(obj);
+            [P_X, P_Y, ~] = trajectoryLib.FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            [SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z_MOVING_HEIGHT, 0);
+            write_angles_to_all_servos(obj, SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE);
+            
+            % Step 5: Linear interpolate to location 
+            X_COORDS = linspace(P_X1, P_X2, 5);
+            Y_COORDS = linspace(P_Y1, P_Y2, 5);
+            
+            for i = 1:5
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(X_COORDS(1), Y_COORDS(2), P_Z_MOVING_HEIGHT, 0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            end
+            
+            % Step 6: Drop the cube        
+            drop_cube_at_coord(obj, trajectoryLib, P_X2, P_Y2, P_Z2, PHI);
         end
         
         function rotate_cube_forward_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z)

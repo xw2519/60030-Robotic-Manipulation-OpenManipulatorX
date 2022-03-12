@@ -20,7 +20,7 @@ set_all_servo_speed_limits(arm, 35);
 [P_X, P_Y, P_Z] = trajectoryLib.get_board_location(11, 9);
 fprintf('Test Log: X: %.4f - Y: %.4f - Z: %.4f \n', P_X, P_Y, P_Z);
 
-[SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z+0.025), -90);
+[SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z+0.025), 0);
 fprintf('Test Log: Theta 1(Deg): %.4f - Theta 2(Deg): %.4f - Theta 3(Deg): %.4f - Theta 4(Deg): %.4f\n', typecast(uint32(SERVO_THETA_1), 'int32'), typecast(uint32(SERVO_THETA_2), 'int32'), typecast(uint32(SERVO_THETA_3), 'int32'), typecast(uint32(SERVO_THETA_4), 'int32'));
 
 write_angles_to_all_servos(arm, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, (SERVO_THETA_4+0.0096)); % Move to directly above cube
