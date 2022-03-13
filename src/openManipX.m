@@ -27,8 +27,8 @@ classdef openManipX
         PROTOCOL_VERSION            = 2.0;          % See which protocol version is used in the Dynamixel
 
         % Default setting
-        BAUDRATE                    = 1000000;
-        DEVICENAME                  = 'COM9';       % Check which port is being used on your controller
+        BAUDRATE                    = 115200;
+        DEVICENAME                  = 'COM8';       % Check which port is being used on your controller
                                                     % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'      
         TORQUE_ENABLE               = 1;            % Value for enabling the torque
         TORQUE_DISABLE              = 0;            % Value for disabling the torque

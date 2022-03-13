@@ -249,7 +249,7 @@ classdef trajectoryLib
 
                 % Converting angles into format required by servo
                 if(imag(RAW_THETA_1) < 10^-5 && imag(RAW_THETA_2) < 10^-5 && imag(RAW_THETA_3) < 10^-5 && imag(RAW_THETA_4) < 10^-5)
-                    SERVO_THETA_1 = real((180 - RAW_THETA_1) + obj.THETA_1_CALIBRATION);
+                    SERVO_THETA_1 = real((180 - RAW_THETA_1)+obj.THETA_1_CALIBRATION);
                     SERVO_THETA_2 = real((180 + (RAW_THETA_2-10.61965528)) + obj.THETA_2_CALIBRATION);
                     SERVO_THETA_3 = real((180+(-RAW_THETA_3-79.38034472)) + obj.THETA_3_CALIBRATION);
                     SERVO_THETA_4 = real((180-RAW_THETA_4) + obj.THETA_4_CALIBRATION);
