@@ -28,7 +28,7 @@ classdef openManipX
 
         % Default setting
         BAUDRATE                    = 115200;
-        DEVICENAME                  = 'COM8';       % Check which port is being used on your controller
+        DEVICENAME                  = 'COM9';       % Check which port is being used on your controller
                                                     % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'      
         TORQUE_ENABLE               = 1;            % Value for enabling the torque
         TORQUE_DISABLE              = 0;            % Value for disabling the torque
@@ -57,10 +57,10 @@ classdef openManipX
         
         % Gripper calibrate values 
         GRIPPER_CLOSE = 2470
-        GRIPPER_OPEN = 2074.43
+        GRIPPER_OPEN = 1870
         
         % Pick up and drop cubes calibration values 
-        ABOVE_CUBE_OFFSET = 0.05
+        ABOVE_CUBE_OFFSET = 0.09
     end
     
     % properties
@@ -188,15 +188,19 @@ classdef openManipX
         
         %% --- Check position 
         function check_position_reached(obj, goal_pos_1, goal_pos_2, goal_pos_3, goal_pos_4)
-            goal_pos_1 = typecast(uint32(goal_pos_1/0.088), 'int32');
-            goal_pos_2 = typecast(uint32(goal_pos_2/0.088), 'int32'); 
-            goal_pos_3 = typecast(uint32(goal_pos_3/0.088), 'int32'); 
-            goal_pos_4 = typecast(uint32(goal_pos_4/0.088), 'int32'); 
+            constant = 360/4096;
+            goal_pos_1 = typecast(uint32(goal_pos_1/constant), 'int32');
+            goal_pos_2 = typecast(uint32(goal_pos_2/constant), 'int32'); 
+            goal_pos_3 = typecast(uint32(goal_pos_3/constant), 'int32'); 
+            goal_pos_4 = typecast(uint32(goal_pos_4/constant), 'int32'); 
             
             logger(mfilename, "Checking if servo positions reached")
             
+            % Start timer and only adjust if a certain time has passed            
             % Loop until position is reached 
-            while 1
+            tic; 
+            
+            while 1 
                 dxl_1_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID1_BaseRotation, obj.ADDR_PRO_PRESENT_POSITION);
                 if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
                     printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
@@ -517,10 +521,11 @@ classdef openManipX
             logger(mfilename, msg) % [Log]
             
             % Convert to raw encoder values
-            ID1_VALUE = ID1_ANGLE / 0.088;
-            ID2_VALUE = ID2_ANGLE / 0.088;
-            ID3_VALUE = ID3_ANGLE / 0.088;
-            ID4_VALUE = ID4_ANGLE / 0.088;
+            constant = 360/4096;
+            ID1_VALUE = ID1_ANGLE / constant;
+            ID2_VALUE = ID2_ANGLE / constant;
+            ID3_VALUE = ID3_ANGLE / constant;
+            ID4_VALUE = ID4_ANGLE / constant;
 
             % Add goal position values to the Syncwrite storage
             obj.DXL_ADDPARAM_RESULT = groupSyncWriteAddParam(obj.GROUPWRITE_NUM, obj.DXL_ID1_BaseRotation, typecast(int32(ID1_VALUE), 'uint32'), 4);
@@ -732,38 +737,91 @@ classdef openManipX
             logger(mfilename, "Gripper closed") 
         end
         
+        function close_gripper_pen(obj)
+            logger(mfilename, "Closing gripper")
+            % 2382.0 -> R02
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, obj.GRIPPER_CLOSE + 150);
+            pause(0.5)
+            
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to close \n', obj.DXL_ID5_Gripper);
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to close \n', obj.DXL_ID5_Gripper);
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            end
+            
+            % Loop until position is reached 
+            while 1
+                dxl_present_position = read4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_PRESENT_POSITION);
+                if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                    printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                    printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+                end
+                
+                if ~((abs(obj.GRIPPER_CLOSE - typecast(uint32(dxl_present_position), 'int32')) > obj.DXL_MOVING_STATUS_THRESHOLD))
+                    logger(mfilename, "Goal position reached")
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', obj.GRIPPER_CLOSE);
+                    fprintf('[Log]: Pos: #%d - #%d - #%d - #%d \n', dxl_present_position);
+                    break;
+                end
+            end
+            
+            logger(mfilename, "Gripper closed") 
+        end
+        
         %% --- Task functions --- %%
         function pick_up_cube_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, PHI)            
             % Calculate IK
             [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), 0);
 
             % Move to coordinate directly above cube by 0.05 m
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, 180);
             open_gripper(obj);
             
             Z_COORDS = linspace((P_Z + obj.ABOVE_CUBE_OFFSET), P_Z, 10);
             PHI_TRANSITION = 0;
             
-            for i = 1:10
-                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
-                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            %for i = 1:10
+            %    [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+            %    write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
                 
-                PHI_TRANSITION = PHI_TRANSITION -9;
-            end
+            %    PHI_TRANSITION = PHI_TRANSITION -9;
+            %end
             
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, -90);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
             % Move arm down and grip the cube 
+            pause(0.5);
             close_gripper(obj); 
 
             % Move arm back up
             Z_COORDS = linspace(P_Z, (P_Z + obj.ABOVE_CUBE_OFFSET), 10);
             PHI_TRANSITION = -90;
             
-            for i = 1:10
-                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
-                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            %for i = 1:10
+            %    [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+            %    write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
                 
-                PHI_TRANSITION = PHI_TRANSITION + 9;
+            %    PHI_TRANSITION = PHI_TRANSITION + 9;
+            %end
+
+            
+            
+
+            dist = sqrt(P_X^2 + P_Y^2);
+            disp(dist);
+            if (dist > 0.1375)
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + obj.ABOVE_CUBE_OFFSET, 0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            else
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + obj.ABOVE_CUBE_OFFSET, -90);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
             end
+            write_angles_to_all_servos(obj, SERVO_THETA_1, 180, 180, 180);
+            %write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
         end
         
         function pick_up_cube_at(obj, trajectoryLib, trajectory_obj, ROW, COLUMN, PHI)
@@ -799,31 +857,40 @@ classdef openManipX
             [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), 0);
             
             % Move to coordinate directly above cube by 0.05 m
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            %write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
             
-            Z_COORDS = linspace((P_Z + obj.ABOVE_CUBE_OFFSET), P_Z, 10);
-            PHI_TRANSITION = -9;
+            %Z_COORDS = linspace((P_Z + obj.ABOVE_CUBE_OFFSET), P_Z, 10);
+            %PHI_TRANSITION = -9;
             
-            for i = 1:10
-                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
-                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            %for i = 1:10
+            %    [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+            %    write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
                 
-                PHI_TRANSITION = PHI_TRANSITION -9;
-            end
+            %    PHI_TRANSITION = PHI_TRANSITION -9;
+            %end
+            
+            
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z-0.001, -90);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, 180, 180, 180);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
             
             % Drop the cube 
+            pause(1);
             open_gripper(obj);
 
             % Move arm back up
             Z_COORDS = linspace(P_Z, (P_Z + obj.ABOVE_CUBE_OFFSET), 10);
             PHI_TRANSITION = -90;
             
-            for i = 1:10
-                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
-                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            %for i = 1:10
+            %    [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+            %    write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
                 
-                PHI_TRANSITION = PHI_TRANSITION + 9;
-            end
+            %    PHI_TRANSITION = PHI_TRANSITION + 9;
+            %end
+            
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + obj.ABOVE_CUBE_OFFSET, 0);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
         end
 
         function drop_cube_at(obj, trajectoryLib, trajectory_obj, ROW, COLUMN, PHI)
@@ -856,9 +923,14 @@ classdef openManipX
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
         end
         
-        function move_cube_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, P_X2, P_Y2, P_Z2)
+        function move_cube_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, P_X2, P_Y2, P_Z2, forward_offset, height_offset)
             PHI = -90;
             PICKING_HEIGHT = 0.03;
+            
+            degree = atand(P_Y2/P_X2);
+            
+            y_offset = (forward_offset) * sind(degree);
+            x_offset = (forward_offset) * cosd(degree);
             
             % Linear interpolation:
             % - Arm will move around at 0.06 height and PHI = 0
@@ -867,17 +939,17 @@ classdef openManipX
             [P_X, P_Y, P_Z] = trajectoryLib.FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
             
             P_Z_MOVING_HEIGHT = 0.15;
-            [SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z_MOVING_HEIGHT, 0);
-            write_angles_to_all_servos(obj, SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE);
+            %[SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z_MOVING_HEIGHT, 0);
+            %write_angles_to_all_servos(obj, SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE);
             
             % Step 2: Linear interpolate to coordinate directly 0.1 m above
             X_COORDS = linspace(P_X, P_X1, 5);
             Y_COORDS = linspace(P_Y, P_Y1, 5);
             
-            for i = 1:5
-                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(X_COORDS(1), Y_COORDS(2), P_Z_MOVING_HEIGHT, 0);
-                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
-            end
+            %for i = 1:5
+            %    [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(X_COORDS(1), Y_COORDS(2), P_Z_MOVING_HEIGHT, 0);
+            %    write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            %end
             
             % Step 3: Pick up cube            
             pick_up_cube_at_coord(obj, trajectoryLib, P_X1, P_Y1, P_Z1, PHI);
@@ -886,82 +958,145 @@ classdef openManipX
             [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = read_all_servo_angles(obj);
             [P_X, P_Y, ~] = trajectoryLib.FK(SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
             
-            [SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z_MOVING_HEIGHT, 0);
-            write_angles_to_all_servos(obj, SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE);
+            [SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE] = trajectoryLib.IK_with_PHI(P_X2 + x_offset, P_Y2 + y_offset, P_Z_MOVING_HEIGHT + height_offset, 0);
+            %write_angles_to_all_servos(obj, SERVO_THETA_1_MOVE, SERVO_THETA_2_MOVE, SERVO_THETA_3_MOVE, SERVO_THETA_4_MOVE);
             
             % Step 5: Linear interpolate to location 
             X_COORDS = linspace(P_X1, P_X2, 5);
             Y_COORDS = linspace(P_Y1, P_Y2, 5);
-            
-            for i = 1:5
-                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(X_COORDS(1), Y_COORDS(2), P_Z_MOVING_HEIGHT, 0);
-                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
-            end
-            
+           
             % Step 6: Drop the cube        
-            drop_cube_at_coord(obj, trajectoryLib, P_X2, P_Y2, P_Z2, PHI);
+            drop_cube_at_coord(obj, trajectoryLib, P_X2 + x_offset, P_Y2 + y_offset, P_Z2 + height_offset, PHI);
         end
         
         function rotate_cube_forward_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z)
-            phi = 0;
-            [SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
-            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, phi);
-            phi = -90;
-            [SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
-            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, phi);
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI(P_X, P_Y, (P_Z + obj.ABOVE_CUBE_OFFSET), 0);
+
+            % Move to coordinate directly above cube by 0.05 m
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            open_gripper(obj);
             
-            % Move to coordinate directly above cube by 0.025 m
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
-            pause(3);
+            Z_COORDS = linspace((P_Z + obj.ABOVE_CUBE_OFFSET), P_Z, 10);
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI_tip(P_X, P_Y, Z_COORDS(i), 0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            end
+            
+            % Move arm down and grip the cube 
+            close_gripper(obj); 
+            
+            % Move arm back up
+            Z_COORDS = linspace(P_Z, (P_Z + 0.1), 0);
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), 0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            end
+            
+            PHI_TRANSITION = 0;
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i), PHI_TRANSITION);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+                PHI_TRANSITION = PHI_TRANSITION -9;
+            end
             open_gripper(obj);
-            pause(3);
-            % - Pick up cube at position with phi = 0 
-            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION);
-            pause(3);
-            close_gripper(obj);
-            pause(3);
-            % - Move upward 
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
-            paise(3);
-            % - Move cube to the exact same position with phi = -90
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION);
-            pause(3);
-            % Drop cube at intended position
-            write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION);
-            pause(3);
-            open_gripper(obj);
-            pause(3);
         end
         
-        function rotate_cube_backward_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z)
+        function pick_up_pen(obj, trajectoryLib, P_X, P_Y, P_Z)
+            open_gripper(obj);
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI_draw(P_X, P_Y, P_Z, 0);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            close_gripper_pen(obj);
+            pause(1);
+            
+            % Move arm back up
+            Z_COORDS = linspace(P_Z, (P_Z + 0.05), 10);
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i),  0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+            end
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, SERVO_THETA_4_ABOVE_CUBE);
+        end
+        
+        function drop_pen(obj, trajectoryLib, P_X, P_Y, P_Z)
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI_draw(P_X, P_Y, P_Z+0.055, 0);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI_draw(P_X, P_Y, P_Z, 0);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            open_gripper(obj);
+            pause(1);
+            
+            % Move arm back up
+            Z_COORDS = linspace(P_Z, (P_Z + 0.05), 10);
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i),  0);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+            end
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, SERVO_THETA_4_ABOVE_CUBE);
+        end
+                  
+        function rotate_cube_backward_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, forward_offset, z_offset)
+            
+            constant = 0.00000115;
+            constant2 = 0.00000205;
+            constant3 = -0.005;
+            offset = 1/(P_X^2 + P_Y^2 + P_Z^2)^3 * constant;
+            offset2 = 1/(P_X^2 + P_Y^2 + P_Z^2)^2 * constant2;
+            dist = (P_X^2 + P_Y^2 + P_Z^2);
+            
             phi = -90;
-            [SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
-            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, phi);
+            degree = atand(P_Y/P_X);
+
+            general_z_offset = 0.0035;
+            y_offset = (offset2 + offset + constant3) * sind(degree);
+            x_offset = (offset2 + offset + constant3) * cosd(degree);
+            
+            y_offset_2 = (forward_offset) * sind(degree);
+            x_offset_2 = (forward_offset) * cosd(degree);
+            
+            disp(x_offset);
+            disp(y_offset);
+            [SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + general_z_offset, phi);
             phi = 0;
-            [SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z + 0.025, phi);
-            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = trajectoryLib.IK_with_PHI(P_X, P_Y, P_Z, phi);
+            [SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION] = trajectoryLib.IK_with_PHI(P_X-x_offset + x_offset_2, P_Y - y_offset + y_offset_2, P_Z - offset + z_offset, phi);
             
             % Move to coordinate directly above cube by 0.025 m
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
-            pause(3);
+            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, 180, 180, 180);
+            
             open_gripper(obj);
-            pause(3);
+            pause(1);
             % - Pick up cube at position with phi = 0 
             write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, SERVO_THETA_2_PRE_ROTATION, SERVO_THETA_3_PRE_ROTATION, SERVO_THETA_4_PRE_ROTATION);
-            pause(3);
+            pause(1);
             close_gripper(obj);
-            pause(3);
-            % - Move upward 
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_PRE_ROTATION, SERVO_THETA_2_ABOVE_PRE_ROTATION, SERVO_THETA_3_ABOVE_PRE_ROTATION, SERVO_THETA_4_ABOVE_PRE_ROTATION);
-            pause(3);
+            % - Move upward             pause(3);
             % - Move cube to the exact same position with phi = -90
-            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_POST_ROTATION, SERVO_THETA_2_ABOVE_POST_ROTATION, SERVO_THETA_3_ABOVE_POST_ROTATION, SERVO_THETA_4_ABOVE_POST_ROTATION);
-            pause(3);
+            write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, 180, 180, SERVO_THETA_4_POST_ROTATION);
             % Drop cube at intended position
             write_angles_to_all_servos(obj, SERVO_THETA_1_POST_ROTATION, SERVO_THETA_2_POST_ROTATION, SERVO_THETA_3_POST_ROTATION, SERVO_THETA_4_POST_ROTATION);
-            pause(3);
+            pause(1);
             open_gripper(obj);
-            pause(3);
+            pause(1);
+            write_angles_to_all_servos(obj, SERVO_THETA_1_PRE_ROTATION, 180, 180, 180);
         end
         
         function rotate_cube_forward_at(obj, trajectoryLib, ROW, COLUMN)
