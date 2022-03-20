@@ -352,7 +352,10 @@ classdef trajectoryLib
                 SERVO_THETA_3 = 180 - (RAW_THETA_3 + constant);
                 SERVO_THETA_4 = 180 - RAW_THETA_4 - 0.3;  
             else
-                assert("Unreachable");
+                SERVO_THETA_1 = 1000;
+                SERVO_THETA_2 = 1000;
+                SERVO_THETA_3 = 1000;
+                SERVO_THETA_4 = 1000;
             end
         end
         
