@@ -27,7 +27,7 @@ classdef openManipX
         PROTOCOL_VERSION            = 2.0;          % See which protocol version is used in the Dynamixel
 
         % Default setting
-        BAUDRATE                    = 115200;
+        BAUDRATE                    = 3000000;
         DEVICENAME                  = 'COM9';       % Check which port is being used on your controller
                                                     % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'      
         TORQUE_ENABLE               = 1;            % Value for enabling the torque
@@ -152,23 +152,27 @@ classdef openManipX
         
         function delete(obj)
             logger(mfilename, "Deactivating robotic arm")
-            
+            set_all_servo_speed_limits(obj, 30);
+            set_all_servo_acceleration_limits(obj, 8);
+
             % Move to resting position
             obj.write_angles_to_all_servos(180, 180, 180, 180);
-            %check_position_reached(obj, 180, 180, 180, 180);
+            check_position_reached(obj, 180, 180, 180, 180);
             % obj.check_position_reached((180/0.088), (180/0.088), (180/0.088), (180/0.088));
             
             obj.write_angles_to_all_servos(180, 130, 216, 198);
-            %check_position_reached(obj, 180, 130, 216, 198);
+            check_position_reached(obj, 180, 130, 216, 198);
             % obj.check_position_reached((180/0.088), (130/0.088), (216/0.088), (198/0.088));
             
             obj.write_angles_to_all_servos(180, 77.70, 245.04, 219.90);
-            %check_position_reached(obj, 180, 77.70, 245.04, 219.90);
+            check_position_reached(obj, 180, 77.70, 245.04, 219.90);
             % obj.check_position_reached((180/0.088), (77.70/0.088), (245.04/0.088), (219.90/0.088));
             
             obj.write_angles_to_all_servos(180, 62.93, 265.87, 218.67);
-            %check_position_reached(obj, 180, 62.93, 265.87, 218.67);
-            % obj.check_position_reached((180/0.088), (62.93/0.088), (265.87/0.088), (218.67/0.088));
+            check_position_reached(obj, 180, 62.93, 265.87, 218.67);
+            
+            obj.write_angles_to_all_servos(180, 61, 266.2, 219.02);
+            check_position_reached(obj, 180, 61, 266.2, 219.02);
             
             % Disable Dynamixel Torque
             toggle_torque(obj, obj.TORQUE_DISABLE)
@@ -772,6 +776,26 @@ classdef openManipX
             logger(mfilename, "Gripper closed") 
         end
         
+        function close_gripper_stick(obj)
+            logger(mfilename, "Closing gripper")
+            % 2382.0 -> R02
+            
+            write4ByteTxRx(obj.PORT_NUM, obj.PROTOCOL_VERSION, obj.DXL_ID5_Gripper, obj.ADDR_PRO_GOAL_POSITION, obj.GRIPPER_CLOSE + 150);
+            pause(0.5)
+            
+            if getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= obj.COMM_SUCCESS
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to close \n', obj.DXL_ID5_Gripper);
+                printTxRxResult(obj.PROTOCOL_VERSION, getLastTxRxResult(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            elseif getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION) ~= 0
+                fprintf('[Error]: Dynamixel #%d: Gripper failed to close \n', obj.DXL_ID5_Gripper);
+                printRxPacketError(obj.PROTOCOL_VERSION, getLastRxPacketError(obj.PORT_NUM, obj.PROTOCOL_VERSION));
+            end
+            
+            
+            logger(mfilename, "Gripper closed") 
+        end
+        
+        
         %% --- Task functions --- %%
         function pick_up_cube_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, PHI)            
             % Calculate IK
@@ -1053,7 +1077,354 @@ classdef openManipX
             
             write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, SERVO_THETA_4_ABOVE_CUBE);
         end
+        
+        function pick_up_stick(obj, trajectoryLib, P_X, P_Y, P_Z)
+            
+            open_gripper(obj);
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI_stick(P_X, P_Y, P_Z, -90);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, 180);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            close_gripper_stick(obj);
+            pause(1);
+            
+            % Move arm back up
+            Z_COORDS = linspace(P_Z, (P_Z + 0.035), 10);
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i),  -90);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+            end
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, SERVO_THETA_4_ABOVE_CUBE);
+        end
                   
+        function drop_stick(obj, trajectoryLib, P_X, P_Y, P_Z)
+            
+            % Calculate IK
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI_stick(P_X, P_Y, P_Z+0.055, -90);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            
+            [SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE] = trajectoryLib.IK_with_PHI_draw(P_X, P_Y, P_Z, -90);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, SERVO_THETA_2_ABOVE_CUBE, SERVO_THETA_3_ABOVE_CUBE, SERVO_THETA_4_ABOVE_CUBE);
+            open_gripper(obj);
+            pause(1);
+            
+            % Move arm back up
+            Z_COORDS = linspace(P_Z, (P_Z + 0.05), 10);
+            
+            for i = 1:10
+                [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(P_X, P_Y, Z_COORDS(i),  -90);
+                write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+                
+            end
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1_ABOVE_CUBE, 180, 180, SERVO_THETA_4_ABOVE_CUBE);
+        end
+        
+        function drums(obj, trajectoryLib)
+            
+            set_servo_speed_limit(obj, 14, 400);
+            set_servo_acceleration(obj, 14, 150);
+            set_servo_speed_limit(obj, 11, 250);
+            set_servo_acceleration(obj, 11, 120);
+            
+            hitting_height = 0.2;
+            
+            offset_back = -0.109;
+            degree = atand(-0.095/0.315);
+            
+            y_offset = (offset_back) * sind(degree);
+            x_offset = (offset_back) * cosd(degree);
+            
+            
+            write_angles_to_all_servos(obj, 180, 180, 180, 180);
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI_stick(0.315+x_offset, -0.115+y_offset, hitting_height, -1);
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI_stick(0.315+x_offset, -0.115+y_offset, hitting_height, -1);
+            
+            %write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            %write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+20);
+            %write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            const = 50;
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1 - 10, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 10, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 10, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            set_servo_speed_limit(obj, 14, 600);
+            set_servo_acceleration(obj, 14, 350);
+            set_servo_speed_limit(obj, 11, 350);
+            set_servo_acceleration(obj, 11, 170);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1 + const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+25);
+            write_angles_to_all_servos(obj, SERVO_THETA_1- 8, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            set_servo_speed_limit(obj, 11, 30);
+            set_servo_acceleration(obj, 11, 14);
+            set_servo_speed_limit(obj, 14, 30);
+            set_servo_acceleration(obj, 14, 14);
+            
+            pause(1);
+            
+        end
+        
+        function bow (obj, trajectoryLib)
+            
+            hitting_height = 0.2;
+            
+            offset_back = -0.109;
+            degree = atand(-0.095/0.315);
+            
+            y_offset = (offset_back) * sind(degree);
+            x_offset = (offset_back) * cosd(degree);
+            
+            
+            write_angles_to_all_servos(obj, 180, 180, 180, 180);
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI_stick(0.315+x_offset, -0.115+y_offset, hitting_height, -1);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+20);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+20);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            const = 50;
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1 + const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+20);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+20);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+ const, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+           
+        end
+        
+        function hit_1_faster(obj, trajectoryLib)
+            hitting_height = 0.12;
+            
+            const = 40/6;
+            
+            tip_0 = 0;
+            tip_1 = 0+const;
+            tip_2 = 0+(2*(const));
+            tip_3 = 0+(3*(const));
+            tip_4 = 0+(4*(const));
+            tip_5 = 0+(5*(const));
+            
+            offset_back = -0.129;
+            degree = atand(-0.095/0.315);
+            
+            y_offset = (offset_back) * sind(degree);
+            x_offset = (offset_back) * cosd(degree);
+            
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI_stick(0.315+x_offset, -0.095+y_offset, hitting_height, -1);
+            
+            angle_offset = 20;
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            pause(1);
+            set_servo_speed_limit(obj, 14, 500);
+            set_servo_acceleration(obj, 14, 250);
+            set_servo_speed_limit(obj, 11, 350);
+            set_servo_acceleration(obj, 11, 170);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            
+            set_servo_speed_limit(obj, 14, 150);
+            set_servo_acceleration(obj, 14, 600);
+            set_servo_speed_limit(obj, 11, 80);
+            set_servo_acceleration(obj, 11, 35);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+
+            set_servo_speed_limit(obj, 14, 500);
+            set_servo_acceleration(obj, 14, 250);
+            set_servo_speed_limit(obj, 11, 350);
+            set_servo_acceleration(obj, 11, 170);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            pause(0.5);
+            
+            set_servo_speed_limit(obj, 14, 30);
+            set_servo_acceleration(obj, 14, 14);
+            set_servo_speed_limit(obj, 11, 30);
+            set_servo_acceleration(obj, 11, 14)
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1, 180, 180, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, 180, 180, 180, 180);
+            
+        end
+        
+        function hit_1(obj, trajectoryLib)
+            hitting_height = 0.16;
+            
+            const = 40/6;
+            
+            tip_0 = 0;
+            tip_1 = 0+const;
+            tip_2 = 0+(2*(const));
+            tip_3 = 0+(3*(const));
+            tip_4 = 0+(4*(const));
+            tip_5 = 0+(5*(const));
+            
+            offset_back = -0.109;
+            degree = atand(-0.095/0.315);
+            
+            y_offset = (offset_back) * sind(degree);
+            x_offset = (offset_back) * cosd(degree);
+            
+            [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI_stick(0.315+x_offset, -0.095+y_offset, hitting_height, -1);
+            
+            angle_offset = 30;
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            pause(1);
+            set_servo_speed_limit(obj, 14, 400);
+            set_servo_acceleration(obj, 14, 150);
+            set_servo_speed_limit(obj, 11, 250);
+            set_servo_acceleration(obj, 11, 120);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_5, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_4, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            pause(0.5);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_3, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_2, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_0, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_0, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_0, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4);
+            
+            pause(0.5);
+            
+            write_angles_to_all_servos(obj, SERVO_THETA_1+tip_0, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            write_angles_to_all_servos(obj, SERVO_THETA_1+33, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4+angle_offset);
+            set_servo_speed_limit(obj, 11, 30);
+            set_servo_acceleration(obj, 11, 14);
+            set_servo_speed_limit(obj, 14, 30);
+            set_servo_acceleration(obj, 14, 14);
+            pause(1);
+            
+            write_angles_to_all_servos(obj, 180, 180, 180, 180);
+        end
+        
         function rotate_cube_backward_at_coord(obj, trajectoryLib, P_X, P_Y, P_Z, forward_offset, z_offset)
             
             constant = 0.00000115;

@@ -195,6 +195,61 @@ classdef trajectoryLib
             end
         end
         
+        
+        function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = IK_with_PHI_stick(obj, P_X, P_Y, P_Z, PHI)
+            constant = atand(0.024/0.128);
+            constant = 90-constant;
+
+            % Constants
+            A_2 = 0.130;
+            A_3 = 0.124;
+            A_4 = 0.116;
+
+            SIGN = -1;
+
+            P_R = abs(sqrt(P_X^2 + P_Y^2));
+            R_3 = P_R;
+            Z_3 = P_Z - 0.077;
+
+            R_2 = R_3 - A_4*cosd(PHI);
+            Z_2 = Z_3 - A_4*sind(PHI);
+
+            % Calculate angles
+            % Theta 1 
+            if ~(P_X<=0) && ~(P_Y<=0)  
+                RAW_THETA_1 = atand(P_Y/P_X);
+            elseif (P_X<0) && ~(P_Y<0) 
+                RAW_THETA_1 = atand(P_Y/P_X) + 180;
+            elseif (P_X<0) && (P_Y<0) 
+                RAW_THETA_1 = atand(P_Y/P_X) - 180;  
+            else
+                RAW_THETA_1 = atand(P_Y/P_X);
+            end
+
+            % Theta 3 
+            ARGUMENT = ((R_2^2 + Z_2^2 - (A_2^2 + A_3^2))/(2*A_2*A_3));
+            RAW_THETA_3 = SIGN*acosd(ARGUMENT);
+
+            % Theta 2
+            COSINE_ARGUMENT_1 = (((A_2 + A_3*cosd(RAW_THETA_3))*Z_2) - ((A_3*sind(RAW_THETA_3))*R_2))/ (R_2^2 + Z_2^2);
+            SINE_ARGUMENT_1 = (((A_2 + A_3*cosd(RAW_THETA_3))*R_2) + ((A_3*sind(RAW_THETA_3))*Z_2))/ (R_2^2 + Z_2^2);
+            RAW_THETA_2 = atand(SINE_ARGUMENT_1/COSINE_ARGUMENT_1);
+
+            % Theta 4
+            RAW_THETA_4 = PHI - RAW_THETA_3 - 90 + RAW_THETA_2;
+            
+            % Converting angles into format required by servo
+            if(imag(RAW_THETA_1) < 10^-5 && imag(RAW_THETA_2) < 10^-5 && imag(RAW_THETA_3) < 10^-5 && imag(RAW_THETA_4) < 10^-5)
+                SERVO_THETA_1 = 180 + RAW_THETA_1;
+                SERVO_THETA_2 = 180 - (-1*(RAW_THETA_2 - (90 - constant)));
+                SERVO_THETA_3 = 180 - (RAW_THETA_3 + constant);
+                SERVO_THETA_4 = 180 - RAW_THETA_4;  
+            else
+                assert("Unreachable");
+            end
+        end
+        
+        
         function [SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = IK_with_PHI_tip(obj, P_X, P_Y, P_Z, PHI)
             constant = atand(0.024/0.128);
             constant = 90-constant;

@@ -75,7 +75,7 @@ position_control_mode(arm);
 toggle_torque(arm, 1);
 set_all_servo_speed_limits(arm, 50);
 
-[P_X, P_Y, P_Z] = trajectoryLib.get_board_location(9, 5);
+[P_X, P_Y, P_Z] = trajectoryLib.get_board_location(9, 5, 0, 0);
 
 pick_up_pen(arm, trajectoryLib, P_X, P_Y, 0.125);
 
