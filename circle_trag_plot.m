@@ -48,7 +48,6 @@ disp(yunit);
 final_x=[final_x xunit];
 final_y=[final_y yunit];
 
-
 hold on
 scatter(final_x, final_y)
 set(gca, 'YDir','reverse')
