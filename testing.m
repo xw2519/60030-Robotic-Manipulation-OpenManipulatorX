@@ -1,30 +1,55 @@
-[SERVO_THETA_1, SERVO_THETA_2, SERVO_THETA_3, SERVO_THETA_4] = trajectoryLib.IK_with_PHI(0.38, 0, 0.077, 0);
+%Start Coordinates
+x_start = 0.175; %60mm
+y_start = 0.100; %200mm
+z_start = 0.115; %120mm
 
-disp("Servo Theta 1");
-disp(SERVO_THETA_1);
-disp("Servo Theta 2");
-disp(SERVO_THETA_2);
-disp("Servo Theta 3");
-disp(SERVO_THETA_3);
-disp("Servo Theta 4");
-disp(SERVO_THETA_4);
+%Coordinates of circle center
+x = 0.175; %175mm
+y = 0.175; %175mm
+
+%Degree of circle
+deg = 270;
+r = 0.025; %25mm radius
+
+h_l = 0.10;%length of horizontal line
+v_l = 0.10;%length of vertical line
+
+final_x = [];
+final_y = [];
+
+%% draw vertical line
+yunit = 0.10:0.001:0.20;
+xunit = x_start+0*ones(size(yunit));
+
+final_x=[final_x xunit];
+final_y=[final_y yunit];
+
+%% draw diagonal line
+yunit = linspace(0.200,0.150,60);
+xunit = linspace(0.175,0.125,60);
+
+final_x=[final_x xunit];
+final_y=[final_y yunit];
+
+%% draw horizontal line
+xunit = linspace(0.125,0.175,60);
+yunit = linspace(0.150,0.150,60);
+final_x=[final_x xunit];
+final_y=[final_y yunit];
+
+%% draw circle
+rad = pi - deg2rad(deg);
+th = linspace(pi,rad,50); % for thetas from 0 to 2pi with step pi/50 (small steps)
+xunit = flip(r * cos(th) + x);
+yunit = flip(r * sin(th) + y);
+
+disp(yunit);
+
+final_x=[final_x xunit];
+final_y=[final_y yunit];
 
 
-% Test summary:
-% 1. Move robot to starting default position using raw encoder values
-% 2. Move robot to position to pick up cube using raw encoder values
-% 3. Open and close cube
-% 4. Move robot back to default position using angles
-% 5. Open and close gripper
-
-arm = openManipX();
-trajectoryLib = trajectoryLib();
-position_control_mode(arm);
-toggle_torque(arm, 1);
-
-set_all_servo_speed_limits(arm, 35);
-set_all_servo_acceleration_limits(arm, 5);
-
-write_angles_to_all_servos(arm, 135, 218, 238, 86); 
-
-
+hold on
+scatter(final_x, final_y)
+set(gca, 'YDir','reverse')
+axis([0 0.200 0.05 0.3])

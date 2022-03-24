@@ -1,52 +1,65 @@
 %Start Coordinates
-x_start = 0.175; %60mm
-y_start = 0.100; %200mm
+x_start = 0.06; %60mm
+y_start = 0.20; %200mm
 z_start = 0.115; %120mm
-
 %Coordinates of circle center
-x = 0.175; %175mm
-y = 0.175; %175mm
-
+x = 0.1; %160mm
+y = 0.2; %100mm
+%z = height of pen;
 %Degree of circle
-deg = 270;
-r = 0.025; %25mm radius
+deg = -180;
+%Value of radius
+r = 0.04; %20mm radius
 
-h_l = 0.10;%length of horizontal line
-v_l = 0.10;%length of vertical line
+h_l = 0.08;%length of horizontal line
+v_l = 0.075;%length of vertical line
 
 final_x = [];
 final_y = [];
-
-%% draw vertical line
-yunit = 0.10:0.001:0.20;
-xunit = x_start+0*ones(size(yunit));
-
-final_x=[final_x xunit];
-final_y=[final_y yunit];
-
+%% draw horizontal line%%
+%xunit = x_start:0.01:x_start+h_l;
+%yunit = y_start*ones(size(xunit));
+%final_x=[final_x xunit];
+%final_y=[final_y yunit];
 %% draw diagonal line
-yunit = linspace(0.200,0.150,60);
-xunit = linspace(0.175,0.125,60);
-
+yunit = y_start:-0.00093:y_start-v_l;
+xunit = x_start:0.001:x_start+h_l;
 final_x=[final_x xunit];
 final_y=[final_y yunit];
-
-%% draw horizontal line
-xunit = linspace(0.125,0.175,60);
-yunit = linspace(0.150,0.150,60);
-final_x=[final_x xunit];
-final_y=[final_y yunit];
-
-%% draw circle
-rad = pi - deg2rad(deg);
-th = linspace(pi,rad,50); % for thetas from 0 to 2pi with step pi/50 (small steps)
-xunit = flip(r * cos(th) + x);
-yunit = flip(r * sin(th) + y);
-
+%% draw vertical line
+yunit = y_start-v_l:0.001:y_start;
+xunit = x_start+h_l*ones(size(yunit));
 disp(yunit);
-
+disp(xunit);
 final_x=[final_x xunit];
 final_y=[final_y yunit];
+%% draw diagonal line
+%yunit = [y_start+v_l:-0.01:y_start];
+%xunit = x_start:0.01:x_start+0.01*size(yunit,2)-0.01;
+%final_x=[final_x xunit];
+%final_y=[final_y yunit];
+%% draw horizontal line%%
+xunit = x_start+h_l:-0.001:x_start;
+yunit = y_start*ones(size(xunit));
+final_x=[final_x xunit];
+final_y=[final_y yunit];
+%% draw circle
+rad = pi-deg2rad(deg);
+th = linspace(pi,rad,50); %for thetas from 0 to 2pi with step pi/50 (small steps)
+xunit = r * cos(th) + x;
+yunit = r * sin(th) + y;
+final_x=[final_x xunit];
+final_y=[final_y yunit];
+%zunit = z;
+%% draw horizontal line%%
+%xunit = [x_start+h_l-0.01:-0.01:x_start];
+%yunit = (y-r)*ones(size(xunit));
+%final_x=[final_x xunit];
+%final_y=[final_y yunit];
+final_z= z_start*ones(size(final_x));
+hold on
+plot(final_x, final_y)
+axis([0 0.200 0.1 0.3])
 
 THETA_MATRIX = [0 10.6388 -79.2528 -0.1084];
 RAW_THETA_MATRIX = [0 10.6388 -79.2528 -0.1084];
@@ -64,7 +77,7 @@ set_all_servo_speed_limits(arm, 50);
 
 [P_X, P_Y, P_Z] = trajectoryLib.get_board_location(9, 5, 0, 0);
 
-pick_up_pen(arm, trajectoryLib, P_X, P_Y, 0.125, 0.002, 0, 0);
+pick_up_pen(arm, trajectoryLib, P_X, P_Y, 0.125);
 
 [RAW_OPT_T1, RAW_OPT_T2, RAW_OPT_T3, RAW_OPT_T4] = trajectoryLib.IK_with_PHI_draw(final_y(1), final_x(1), final_z(1) + 0.01, 0);
 write_angles_to_all_servos(arm, RAW_OPT_T1, RAW_OPT_T2, RAW_OPT_T3, RAW_OPT_T4)
@@ -88,7 +101,8 @@ pause(1);
 disp(RAW_THETA_MATRIX);
 write_angles_to_all_servos(arm, 180, 180, 180, RAW_OPT_T4);
 
-drop_pen(arm, trajectoryLib, P_X, P_Y, 0.125, 0.002, 0, 0);
+drop_pen(arm, trajectoryLib, P_X, P_Y, 0.125);
+
 
 
 %rotated_x = (final_x-90).*cos(rot) - (final_y-90).*sin(rot);
